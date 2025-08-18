@@ -1,4 +1,4 @@
-export default function EvidencePanel({ evidence = [], isLoading = false }) {
+export default function EvidencePanel({ evidence = [], isLoading = false, isActive = false }) {
   if (isLoading) {
     return (
       <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
@@ -17,7 +17,7 @@ export default function EvidencePanel({ evidence = [], isLoading = false }) {
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+    <div className={`bg-white border border-gray-200 rounded-xl p-6 shadow-sm transition-all duration-500 ${isActive ? 'opacity-100 shadow-lg' : 'opacity-50'}`}>
       <h3 className="text-gray-800 font-semibold mb-4">📚 공식 출처</h3>
       
       {evidence && evidence.length > 0 ? (

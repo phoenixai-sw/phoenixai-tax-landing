@@ -21,34 +21,54 @@ export default function AgentPage() {
 
     setIsLoading(true);
     try {
-      // TODO: API 호출 구현
+      // TODO: GPT-5 API 호출 구현
       console.log('Query submitted:', query);
-             // 임시 결과 설정
-       setResults({
-         overview: '양도세에 대한 기본 정보...',
-         taxRates: '보유기간별 세율 정보...',
-         considerations: '실무상 유의사항...',
-         legalBasis: '관련 법령 및 근거...',
-         conclusion: '결론 및 권고사항...',
-         finalAnswer: {
-           summary: '양도소득세는 부동산 양도 시 발생하는 소득에 대해 과세하는 세금입니다. 장기보유특별공제를 통해 최대 40%까지 세율을 절감할 수 있습니다.',
-           keyPoints: [
-             '3년 이상 보유 + 2년 이상 거주 시 공제 시작',
-             '거주기간이 길수록 공제율 증가 (최대 40%)',
-             '다주택자는 중과세율 적용 가능',
-             '투기과열지구는 추가 제한사항 있음'
-           ],
-           recommendation: '장기보유를 통한 절세 효과를 극대화하고, 전문가 상담을 통해 최적의 양도 시점을 결정하시기 바랍니다.'
-         },
-         evidence: [
-           {
-             domain: 'law.go.kr',
-             title: '양도소득세법 제1조',
-             snippet: '양도소득세에 관한 기본 규정...',
-             url: 'https://law.go.kr/법령/양도소득세법/제1조'
-           }
-         ]
-       });
+      
+      // 임시 결과 설정 (GPT-5 API 응답 구조 시뮬레이션)
+      setResults({
+        answers: [
+          {
+            title: "양도세 기본 개념",
+            content: "양도소득세는 부동산 양도 시 발생하는 소득에 대해 과세하는 세금입니다. 양도소득은 양도가액에서 양도차익을 차감한 금액으로 계산됩니다."
+          },
+          {
+            title: "보유기간별 세율 체계",
+            content: "1년 미만 보유 시 30%, 1년 이상 2년 미만 20%, 2년 이상 3년 미만 15%, 3년 이상 10%의 세율이 적용됩니다. 장기보유특별공제를 통해 최대 40%까지 세율을 절감할 수 있습니다."
+          },
+          {
+            title: "실무상 유의사항",
+            content: "3년 이상 보유하고 2년 이상 거주한 경우 장기보유특별공제가 적용됩니다. 다주택자는 중과세율이 적용될 수 있으며, 투기과열지구는 추가 제한사항이 있습니다."
+          },
+          {
+            title: "절세 전략",
+            content: "장기보유를 통한 절세 효과를 극대화하고, 전문가 상담을 통해 최적의 양도 시점을 결정하는 것이 중요합니다. 또한 거주기간과 보유기간을 정확히 계산하여 공제 혜택을 최대한 활용해야 합니다."
+          }
+        ],
+        finalAnswer: {
+          summary: '양도소득세는 부동산 양도 시 발생하는 소득에 대해 과세하는 세금입니다. 장기보유특별공제를 통해 최대 40%까지 세율을 절감할 수 있습니다.',
+          keyPoints: [
+            '3년 이상 보유 + 2년 이상 거주 시 공제 시작',
+            '거주기간이 길수록 공제율 증가 (최대 40%)',
+            '다주택자는 중과세율 적용 가능',
+            '투기과열지구는 추가 제한사항 있음'
+          ],
+          recommendation: '장기보유를 통한 절세 효과를 극대화하고, 전문가 상담을 통해 최적의 양도 시점을 결정하시기 바랍니다.'
+        },
+        evidence: [
+          {
+            domain: 'law.go.kr',
+            title: '양도소득세법 제1조',
+            snippet: '양도소득세에 관한 기본 규정...',
+            url: 'https://law.go.kr/법령/양도소득세법/제1조'
+          },
+          {
+            domain: 'nts.go.kr',
+            title: '양도소득세 세율표',
+            snippet: '보유기간별 세율 및 공제율 안내...',
+            url: 'https://nts.go.kr/양도소득세/세율표'
+          }
+        ]
+      });
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -124,40 +144,44 @@ export default function AgentPage() {
 
                    {/* Main Content Grid */}
           <div className="grid gap-6 md:grid-cols-2">
-            {/* Left Column - Answer Cards */}
+            {/* Left Column - Dynamic Answer Cards */}
             <section className="space-y-4">
-              {results && (
+              {!results ? (
+                // 질문 전 상태 - 안내 메시지
+                <div className="flex items-center justify-center h-64 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl">
+                  <div className="text-center text-gray-500">
+                    <div className="text-4xl mb-4">💬</div>
+                    <p className="text-lg font-semibold">양도세에 대해 궁금한 점을 물어보세요!</p>
+                    <p className="text-sm mt-2">예: "1년된 주택을 1억의 시세차익을 두고 판매하였습니다"</p>
+                  </div>
+                </div>
+              ) : (
+                // 질문 후 상태 - 동적 답변 카드들
                 <>
-                  <AnswerCard 
-                    title="1. 개요/기본 원칙" 
-                    content={results.overview}
-                    isLoading={isLoading}
-                  />
-                  <AnswerCard 
-                    title="2. 보유·거주기간/세율 표" 
-                    content={results.taxRates}
-                    isLoading={isLoading}
-                  />
-                  <AnswerCard 
-                    title="3. 실무상 유의사항" 
-                    content={results.considerations}
-                    isLoading={isLoading}
-                  />
-                  <AnswerCard 
-                    title="4. 관련 법령 및 근거" 
-                    content={results.legalBasis}
-                    isLoading={isLoading}
-                  />
-                  {/* 추가 답변박스들이 여기에 동적으로 추가될 수 있음 */}
+                  {results.answers?.map((answer, index) => (
+                    <AnswerCard 
+                      key={index}
+                      title={answer.title}
+                      content={answer.content}
+                      isLoading={isLoading}
+                    />
+                  ))}
                 </>
               )}
             </section>
 
             {/* Right Column - Final Answer & Evidence Panel */}
             <aside className="space-y-6">
-              <FinalAnswer finalAnswer={results?.finalAnswer} isLoading={isLoading} />
-              <EvidencePanel evidence={results?.evidence} isLoading={isLoading} />
-              {/* 좌측이 다 차면 추가 답변박스들이 여기로 넘어감 */}
+              <FinalAnswer 
+                finalAnswer={results?.finalAnswer} 
+                isLoading={isLoading}
+                isActive={!!results}
+              />
+              <EvidencePanel 
+                evidence={results?.evidence} 
+                isLoading={isLoading}
+                isActive={!!results}
+              />
             </aside>
           </div>
 

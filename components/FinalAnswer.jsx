@@ -1,4 +1,4 @@
-export default function FinalAnswer({ finalAnswer, isLoading = false }) {
+export default function FinalAnswer({ finalAnswer, isLoading = false, isActive = false }) {
   if (isLoading) {
     return (
       <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-xl p-6 shadow-lg mb-6">
@@ -16,7 +16,7 @@ export default function FinalAnswer({ finalAnswer, isLoading = false }) {
   }
 
   return (
-    <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-xl p-6 shadow-lg mb-6">
+    <div className={`bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-xl p-6 shadow-lg mb-6 transition-all duration-500 ${isActive ? 'opacity-100 shadow-xl' : 'opacity-50'}`}>
       <h3 className="text-blue-800 font-bold text-lg mb-4 flex items-center gap-2">
         <span className="text-2xl">💡</span>
         최종답변

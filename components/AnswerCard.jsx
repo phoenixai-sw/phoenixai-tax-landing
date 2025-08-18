@@ -18,7 +18,7 @@ export default function AnswerCard({ title, content, variant = 'default', isLoad
   };
 
   return (
-    <div className={`p-6 rounded-xl transition-all duration-300 hover:shadow-md ${getCardStyles()}`}>
+    <div className={`p-6 rounded-xl transition-all duration-500 hover:shadow-md animate-fadeInUp ${getCardStyles()}`}>
       <h3 className={`mb-4 ${getTitleStyles()}`}>
         {title}
       </h3>
