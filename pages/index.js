@@ -67,8 +67,8 @@ export default function Home() {
                 </div>
                 <div className="grid grid-cols-3 gap-8">
                   <div className="text-center p-8 bg-white rounded-2xl shadow-lg border-t-4 border-blue-500">
-                    <span className="text-4xl font-bold text-blue-500 block">33+</span>
-                    <div className="text-gray-600 mt-2 font-semibold">국세청 경력</div>
+                    <span className="text-4xl font-bold text-blue-500 block">15+</span>
+                    <div className="text-gray-600 mt-2 font-semibold">세무 경력</div>
                   </div>
                   <div className="text-center p-8 bg-white rounded-2xl shadow-lg border-t-4 border-green-500">
                     <span className="text-4xl font-bold text-green-500 block">500+</span>
