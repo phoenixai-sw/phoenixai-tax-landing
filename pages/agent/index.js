@@ -80,70 +80,110 @@ export default function AgentPage() {
           </button>
         </div>
 
-        {/* Header */}
-        <header className="mb-6 grid gap-3 md:grid-cols-[1fr_auto]">
-          <form onSubmit={handleSubmit} className="flex gap-3">
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="양도세 질문을 입력하세요"
-              className="flex-1 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={isLoading}
-            />
-            <button
-              type="submit"
-              disabled={isLoading || !query.trim()}
-              className="rounded-xl px-5 py-3 bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isLoading ? '처리중...' : '질의'}
-            </button>
-          </form>
-        </header>
+        
 
-        {/* Results Summary Bar */}
-        {results && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl">
-            <div className="flex items-center gap-2">
-              <span className="text-green-600">✅</span>
-              <span className="text-green-800 font-semibold">
-                질의 완료: "{query}"에 대한 답변을 생성했습니다.
-              </span>
-            </div>
-          </div>
-        )}
+        
 
                  {/* Main Content Grid */}
-         <div className="grid gap-6 md:grid-cols-[1fr_2fr_1fr]">
-           {/* Left Column - Interactive Tools */}
-           <aside className="sticky top-6 self-start space-y-6">
-             <TaxCalculator />
-             <HoldingPeriodTimer />
-             <TaxRateChart />
+         <div className="grid gap-6 md:grid-cols-[300px_1fr_350px]">
+           {/* Left Column - Tools Banner */}
+           <aside className="sticky top-6 self-start space-y-4 h-fit">
+             <div className="bg-gradient-to-b from-blue-50 to-purple-50 border-2 border-blue-200 rounded-xl p-4 shadow-lg">
+               <h3 className="text-blue-800 font-bold text-lg mb-4 text-center">🛠️ 세무 도구</h3>
+               <div className="space-y-3">
+                 <button className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white font-semibold py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2">
+                   <span className="text-xl">🧮</span>
+                   양도세 계산기
+                 </button>
+                 <button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2">
+                   <span className="text-xl">⏰</span>
+                   보유기간 타이머
+                 </button>
+                 <button className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-semibold py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2">
+                   <span className="text-xl">📊</span>
+                   세율 변화 차트
+                 </button>
+               </div>
+             </div>
            </aside>
 
-           {/* Center Column - Answer Cards */}
-           <section className="space-y-4">
-             <AnswerCard 
-               title="1. 개요/기본 원칙" 
-               content={results?.overview}
-               isLoading={isLoading}
-             />
-             <AnswerCard 
-               title="2. 보유·거주기간/세율 표" 
-               content={results?.taxRates}
-               isLoading={isLoading}
-             />
-             <AnswerCard 
-               title="3. 실무상 유의사항" 
-               content={results?.considerations}
-               isLoading={isLoading}
-             />
-             <AnswerCard 
-               title="4. 관련 법령 및 근거" 
-               content={results?.legalBasis}
-               isLoading={isLoading}
-             />
+           {/* Center Column - Chat Interface */}
+           <section className="bg-white border-2 border-gray-200 rounded-xl shadow-lg min-h-[600px] flex flex-col">
+             {/* Chat Header */}
+             <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-t-xl">
+               <h2 className="text-xl font-bold flex items-center gap-2">
+                 <span className="text-2xl">🤖</span>
+                 AI Tax Agent
+               </h2>
+               <p className="text-blue-100 text-sm">전문 세무 상담을 도와드립니다</p>
+             </div>
+
+             {/* Chat Messages */}
+             <div className="flex-1 p-6 space-y-4 overflow-y-auto">
+               {!results ? (
+                 <div className="text-center text-gray-500 py-8">
+                   <div className="text-4xl mb-4">💬</div>
+                   <p className="text-lg font-semibold">양도세에 대해 궁금한 점을 물어보세요!</p>
+                   <p className="text-sm mt-2">예: "1년된 주택을 1억의 시세차익을 두고 판매하였습니다"</p>
+                 </div>
+               ) : (
+                 <>
+                   {/* User Message */}
+                   <div className="flex justify-end">
+                     <div className="bg-blue-600 text-white p-4 rounded-xl max-w-[80%]">
+                       <p className="font-semibold">질문:</p>
+                       <p>{query}</p>
+                     </div>
+                   </div>
+
+                   {/* AI Response */}
+                   <div className="flex justify-start">
+                     <div className="bg-gray-100 p-4 rounded-xl max-w-[80%]">
+                       <p className="font-semibold text-gray-800 mb-2">AI 답변:</p>
+                       <div className="space-y-3">
+                         <div>
+                           <h4 className="font-semibold text-blue-600">1. 개요/기본 원칙</h4>
+                           <p className="text-gray-700">{results.overview}</p>
+                         </div>
+                         <div>
+                           <h4 className="font-semibold text-blue-600">2. 보유·거주기간/세율 표</h4>
+                           <p className="text-gray-700">{results.taxRates}</p>
+                         </div>
+                         <div>
+                           <h4 className="font-semibold text-blue-600">3. 실무상 유의사항</h4>
+                           <p className="text-gray-700">{results.considerations}</p>
+                         </div>
+                         <div>
+                           <h4 className="font-semibold text-blue-600">4. 관련 법령 및 근거</h4>
+                           <p className="text-gray-700">{results.legalBasis}</p>
+                         </div>
+                       </div>
+                     </div>
+                   </div>
+                 </>
+               )}
+             </div>
+
+             {/* Chat Input */}
+             <div className="p-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+               <form onSubmit={handleSubmit} className="flex gap-3">
+                 <input
+                   type="text"
+                   value={query}
+                   onChange={(e) => setQuery(e.target.value)}
+                   placeholder="양도세 질문을 입력하세요..."
+                   className="flex-1 border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   disabled={isLoading}
+                 />
+                 <button
+                   type="submit"
+                   disabled={isLoading || !query.trim()}
+                   className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                 >
+                   {isLoading ? '처리중...' : '전송'}
+                 </button>
+               </form>
+             </div>
            </section>
 
            {/* Right Column - Final Answer & Evidence Panel */}
