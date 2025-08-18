@@ -114,46 +114,36 @@ export default function AgentPage() {
         )}
 
                  {/* Main Content Grid */}
-         <div className="grid gap-6 md:grid-cols-[2fr_1fr]">
-           {/* Left Column - Interactive Tools & Answer Cards */}
-           <section className="space-y-6">
-             {/* Interactive Tools */}
-             <div className="grid gap-4 md:grid-cols-2">
-               <TaxCalculator />
-               <HoldingPeriodTimer />
-             </div>
-             
+         <div className="grid gap-6 md:grid-cols-[1fr_2fr_1fr]">
+           {/* Left Column - Interactive Tools */}
+           <aside className="sticky top-6 self-start space-y-6">
+             <TaxCalculator />
+             <HoldingPeriodTimer />
              <TaxRateChart />
-             
-             {/* Answer Cards */}
-             <div className="grid gap-4">
-               <AnswerCard 
-                 title="1. 개요/기본 원칙" 
-                 content={results?.overview}
-                 isLoading={isLoading}
-               />
-               <AnswerCard 
-                 title="2. 보유·거주기간/세율 표" 
-                 content={results?.taxRates}
-                 isLoading={isLoading}
-               />
-               <AnswerCard 
-                 title="3. 실무상 유의사항" 
-                 content={results?.considerations}
-                 isLoading={isLoading}
-               />
-               <AnswerCard 
-                 title="4. 관련 법령 및 근거" 
-                 content={results?.legalBasis}
-                 isLoading={isLoading}
-               />
-               <AnswerCard 
-                 title="5. 결론" 
-                 content={results?.conclusion}
-                 variant="highlight"
-                 isLoading={isLoading}
-               />
-             </div>
+           </aside>
+
+           {/* Center Column - Answer Cards */}
+           <section className="space-y-4">
+             <AnswerCard 
+               title="1. 개요/기본 원칙" 
+               content={results?.overview}
+               isLoading={isLoading}
+             />
+             <AnswerCard 
+               title="2. 보유·거주기간/세율 표" 
+               content={results?.taxRates}
+               isLoading={isLoading}
+             />
+             <AnswerCard 
+               title="3. 실무상 유의사항" 
+               content={results?.considerations}
+               isLoading={isLoading}
+             />
+             <AnswerCard 
+               title="4. 관련 법령 및 근거" 
+               content={results?.legalBasis}
+               isLoading={isLoading}
+             />
            </section>
 
            {/* Right Column - Final Answer & Evidence Panel */}
