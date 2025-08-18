@@ -63,55 +63,21 @@ export default function AgentPage() {
         <meta name="description" content="AI 기반 전문 세무 상담 서비스" />
       </Head>
 
-      <main className="max-w-[1080px] mx-auto px-4 py-8 min-h-screen">
-        {/* Back to Main Button */}
-        <div className="mb-6">
-          <button
-            onClick={handleBackToMain}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            메인 페이지로 돌아가기
-          </button>
-        </div>
+             <main className="max-w-[1080px] mx-auto px-4 py-8 min-h-screen">
+         {/* Top Navigation Bar */}
+         <div className="mb-6 flex justify-between items-center">
+           {/* Back to Main Button */}
+           <button
+             onClick={handleBackToMain}
+             className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105"
+           >
+             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+             </svg>
+             메인 페이지로 돌아가기
+           </button>
 
-        {/* Header */}
-        <header className="mb-6 grid gap-3 md:grid-cols-[1fr_auto]">
-          <form onSubmit={handleSubmit} className="flex gap-3">
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="양도세 질문을 입력하세요"
-              className="flex-1 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={isLoading}
-            />
-            <button
-              type="submit"
-              disabled={isLoading || !query.trim()}
-              className="rounded-xl px-5 py-3 bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isLoading ? '처리중...' : '질의'}
-            </button>
-          </form>
-        </header>
-
-        {/* Results Summary Bar */}
-        {results && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl">
-            <div className="flex items-center gap-2">
-              <span className="text-green-600">✅</span>
-              <span className="text-green-800 font-semibold">
-                질의 완료: "{query}"에 대한 답변을 생성했습니다.
-              </span>
-            </div>
-          </div>
-        )}
-
-                 {/* Tools Banner - Top Right */}
-         <div className="mb-6 flex justify-end">
+           {/* Tools Banner */}
            <button
              onClick={() => router.push('/tools')}
              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-400 text-white font-bold rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105"
@@ -122,6 +88,39 @@ export default function AgentPage() {
              </svg>
            </button>
          </div>
+
+         {/* Header */}
+         <header className="mb-6 grid gap-3 md:grid-cols-[1fr_auto]">
+           <form onSubmit={handleSubmit} className="flex gap-3">
+             <input
+               type="text"
+               value={query}
+               onChange={(e) => setQuery(e.target.value)}
+               placeholder="양도세 질문을 입력하세요"
+               className="flex-1 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+               disabled={isLoading}
+             />
+             <button
+               type="submit"
+               disabled={isLoading || !query.trim()}
+               className="rounded-xl px-5 py-3 bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+             >
+               {isLoading ? '처리중...' : '질의'}
+             </button>
+           </form>
+         </header>
+
+         {/* Results Summary Bar */}
+         {results && (
+           <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl">
+             <div className="flex items-center gap-2">
+               <span className="text-green-600">✅</span>
+               <span className="text-green-800 font-semibold">
+                 질의 완료: "{query}"에 대한 답변을 생성했습니다.
+               </span>
+             </div>
+           </div>
+         )}
 
          {/* Main Content Grid */}
          <div className="grid gap-6 md:grid-cols-[2fr_1fr]">
