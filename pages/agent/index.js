@@ -4,9 +4,6 @@ import { useRouter } from 'next/router';
 import AnswerCard from '../../components/AnswerCard';
 import EvidencePanel from '../../components/EvidencePanel';
 import FinalAnswer from '../../components/FinalAnswer';
-import TaxCalculator from '../../components/TaxCalculator';
-import HoldingPeriodTimer from '../../components/HoldingPeriodTimer';
-import TaxRateChart from '../../components/TaxRateChart';
 
 export default function AgentPage() {
   const router = useRouter();
@@ -113,15 +110,21 @@ export default function AgentPage() {
           </div>
         )}
 
-                 {/* Main Content Grid */}
-         <div className="grid gap-6 md:grid-cols-[1fr_2fr_1fr]">
-           {/* Left Column - Interactive Tools */}
-           <aside className="sticky top-6 self-start space-y-6">
-             <TaxCalculator />
-             <HoldingPeriodTimer />
-             <TaxRateChart />
-           </aside>
+                 {/* Tools Banner - Top Right */}
+         <div className="mb-6 flex justify-end">
+           <button
+             onClick={() => router.push('/tools')}
+             className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-400 text-white font-bold rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105"
+           >
+             <span>양도세 계산기 등 부가기능</span>
+             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+             </svg>
+           </button>
+         </div>
 
+         {/* Main Content Grid */}
+         <div className="grid gap-6 md:grid-cols-[2fr_1fr]">
            {/* Center Column - Answer Cards */}
            <section className="space-y-4">
              <AnswerCard 
