@@ -1,12 +1,18 @@
 import { useState } from 'react';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 import AnswerCard from '../../components/AnswerCard';
 import EvidencePanel from '../../components/EvidencePanel';
 
 export default function AgentPage() {
+  const router = useRouter();
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState(null);
+
+  const handleBackToMain = () => {
+    router.push('/');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,6 +53,19 @@ export default function AgentPage() {
       </Head>
 
       <main className="max-w-[1080px] mx-auto px-4 py-8 min-h-screen">
+        {/* Back to Main Button */}
+        <div className="mb-6">
+          <button
+            onClick={handleBackToMain}
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            메인 페이지로 돌아가기
+          </button>
+        </div>
+
         {/* Header */}
         <header className="mb-6 grid gap-3 md:grid-cols-[1fr_auto]">
           <form onSubmit={handleSubmit} className="flex gap-3">
