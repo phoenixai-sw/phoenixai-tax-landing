@@ -13,6 +13,9 @@ export default function AgentPage() {
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState(null);
+  const [openCalc, setOpenCalc] = useState(false);
+  const [openTimer, setOpenTimer] = useState(false);
+  const [openChart, setOpenChart] = useState(false);
 
   const handleBackToMain = () => {
     router.push('/');
@@ -86,23 +89,70 @@ export default function AgentPage() {
 
                  {/* Main Content Grid */}
          <div className="grid gap-6 md:grid-cols-[300px_1fr_350px]">
-           {/* Left Column - Tools Banner */}
+           {/* Left Column - Tools Banner (Dropdown) */}
            <aside className="sticky top-6 self-start space-y-4 h-fit">
              <div className="bg-gradient-to-b from-blue-50 to-purple-50 border-2 border-blue-200 rounded-xl p-4 shadow-lg">
                <h3 className="text-blue-800 font-bold text-lg mb-4 text-center">🛠️ 세무 도구</h3>
                <div className="space-y-3">
-                 <button className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white font-semibold py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2">
-                   <span className="text-xl">🧮</span>
-                   양도세 계산기
-                 </button>
-                 <button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2">
-                   <span className="text-xl">⏰</span>
-                   보유기간 타이머
-                 </button>
-                 <button className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-semibold py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2">
-                   <span className="text-xl">📊</span>
-                   세율 변화 차트
-                 </button>
+                 {/* Calculator Dropdown */}
+                 <div>
+                   <button
+                     aria-expanded={openCalc}
+                     onClick={() => setOpenCalc(!openCalc)}
+                     className={`w-full text-white font-semibold py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-300 flex items-center justify-between ${openCalc ? 'bg-gradient-to-r from-green-600 to-blue-600' : 'bg-gradient-to-r from-green-500 to-blue-500'}`}
+                   >
+                     <span className="flex items-center gap-2">
+                       <span className="text-xl">🧮</span>
+                       양도세 계산기
+                     </span>
+                     <span className="text-sm opacity-90">{openCalc ? '접기 ▲' : '펼치기 ▼'}</span>
+                   </button>
+                   {openCalc && (
+                     <div className="mt-3 bg-white rounded-lg border border-green-200 p-3">
+                       <TaxCalculator />
+                     </div>
+                   )}
+                 </div>
+
+                 {/* Timer Dropdown */}
+                 <div>
+                   <button
+                     aria-expanded={openTimer}
+                     onClick={() => setOpenTimer(!openTimer)}
+                     className={`w-full text-white font-semibold py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-300 flex items-center justify-between ${openTimer ? 'bg-gradient-to-r from-purple-600 to-pink-600' : 'bg-gradient-to-r from-purple-500 to-pink-500'}`}
+                   >
+                     <span className="flex items-center gap-2">
+                       <span className="text-xl">⏰</span>
+                       보유기간 타이머
+                     </span>
+                     <span className="text-sm opacity-90">{openTimer ? '접기 ▲' : '펼치기 ▼'}</span>
+                   </button>
+                   {openTimer && (
+                     <div className="mt-3 bg-white rounded-lg border border-purple-200 p-3">
+                       <HoldingPeriodTimer />
+                     </div>
+                   )}
+                 </div>
+
+                 {/* Chart Dropdown */}
+                 <div>
+                   <button
+                     aria-expanded={openChart}
+                     onClick={() => setOpenChart(!openChart)}
+                     className={`w-full text-white font-semibold py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-300 flex items-center justify-between ${openChart ? 'bg-gradient-to-r from-blue-600 to-indigo-600' : 'bg-gradient-to-r from-blue-500 to-indigo-500'}`}
+                   >
+                     <span className="flex items-center gap-2">
+                       <span className="text-xl">📊</span>
+                       세율 변화 차트
+                     </span>
+                     <span className="text-sm opacity-90">{openChart ? '접기 ▲' : '펼치기 ▼'}</span>
+                   </button>
+                   {openChart && (
+                     <div className="mt-3 bg-white rounded-lg border border-blue-200 p-3">
+                       <TaxRateChart />
+                     </div>
+                   )}
+                 </div>
                </div>
              </div>
            </aside>
