@@ -1,0 +1,1886 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI신승 세무사 - AI 상담 서비스</title>
+    
+    <!-- Browser Tab Color and Theme -->
+    <meta name="theme-color" content="#FFF9C4">
+    <meta name="msapplication-TileColor" content="#FFF9C4">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Favicon and Tab Icon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --pastel-yellow: #FFF9C4;
+            --pastel-pink: #FCE4EC;
+            --pastel-blue: #E3F2FD;
+            --pastel-green: #F1F8E9;
+            --pastel-purple: #F3E5F5;
+            --soft-yellow: #FFF176;
+            --soft-pink: #F48FB1;
+            --soft-blue: #81D4FA;
+            --soft-green: #AED581;
+            --soft-purple: #CE93D8;
+            --text-dark: #2E3440;
+            --text-medium: #5E81AC;
+            --border-light: #E5E7EB;
+            
+            /* Course specific colors matching button gradients */
+            --course1-light: #FFE8F1;
+            --course1-medium: #FFB3D1;
+            --course2-light: #E1F5FE;
+            --course2-medium: #81D4FA;
+            --course3-light: #E8F5E8;
+            --course3-medium: #A5D6A7;
+            --course4-light: #FFF8E1;
+            --course4-medium: #FFE082;
+            --course5-light: #E0F7FA;
+            --course5-medium: #80CBC4;
+            --course6-light: #FFF3E0;
+            --course6-medium: #FFCC80;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: #FFFFFF;
+            min-height: 100vh;
+        }
+
+        /* Browser Tab Styling */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #FFF9C4;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #FFD54F;
+            border-radius: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FFC107;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+        }
+
+        /* Section Styles */
+        .section {
+            padding: 5rem 0;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: var(--text-dark);
+            font-weight: 800;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--text-medium);
+            margin-bottom: 4rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* About Section */
+        .about {
+            background: var(--pastel-yellow);
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .about-text h3 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #000000;
+            font-weight: 700;
+        }
+
+        .about-text p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            color: #000000;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border-top: 4px solid #667eea;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+
+        .stat-label {
+            color: var(--text-medium);
+            margin-top: 0.5rem;
+            font-weight: 600;
+        }
+
+        /* Solutions Section */
+        .solutions {
+            background: #FFFFFF;
+        }
+
+        .solutions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .solution-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border-top: 4px solid;
+        }
+
+        .solution-card:nth-child(1) { border-top-color: #667eea; }
+        .solution-card:nth-child(2) { border-top-color: #4CAF50; }
+        .solution-card:nth-child(3) { border-top-color: #FF9800; }
+        .solution-card:nth-child(4) { border-top-color: #E91E63; }
+        .solution-card:nth-child(5) { border-top-color: #2196F3; }
+        .solution-card:nth-child(6) { border-top-color: #9C27B0; }
+
+        .solution-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .solution-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            color: #667eea;
+        }
+
+        .solution-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+            font-weight: 700;
+        }
+
+        .solution-card p {
+            color: var(--text-medium);
+            line-height: 1.6;
+        }
+
+        /* Portfolio Section */
+        .portfolio {
+            background: var(--pastel-pink);
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .portfolio-item {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            border-left: 4px solid #667eea;
+        }
+
+        .portfolio-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .portfolio-item h4 {
+            color: #000000;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .portfolio-item p {
+            color: #000000;
+            line-height: 1.6;
+        }
+
+        /* CEO Section */
+        .ceo {
+            background: var(--pastel-green);
+            text-align: center;
+        }
+
+        .ceo-card {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border-top: 4px solid #667eea;
+        }
+
+        .ceo-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .ceo-name {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #000000;
+        }
+
+        .ceo-title {
+            color: #000000;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        .ceo-description {
+            text-align: left;
+            line-height: 1.8;
+            color: #000000;
+        }
+
+        .ceo-description ul {
+            margin: 1rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .ceo-description li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Contact Section */
+        .contact {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .contact-info h3 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            font-weight: 700;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            color: #000000;
+        }
+
+        .contact-item i {
+            font-size: 1.5rem;
+            color: #FFD54F;
+            margin-right: 1rem;
+            width: 30px;
+        }
+
+        .contact-form {
+            background: rgba(255,255,255,0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.9);
+            font-size: 1rem;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            height: 120px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #FFD54F, #FF9800);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Navigation */
+        .nav-header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: var(--pastel-yellow);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 1rem 0;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid #FFD54F;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #000000;
+            font-weight: 700;
+            transition: color 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .nav-menu a:hover {
+            color: #000000;
+            background: rgba(255, 213, 79, 0.3);
+        }
+
+        /* Dropdown */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            min-width: 280px;
+            background: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 1rem 0;
+            border: 1px solid var(--border-light);
+            z-index: 1001;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-content a {
+            display: block;
+            padding: 0.8rem 1.5rem;
+            color: #000000;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-radius: 0;
+            position: relative;
+            font-weight: 700;
+        }
+
+        .dropdown-content a::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-content a:nth-child(1)::before { background: linear-gradient(to bottom, #FF6B9D, #C2185B); }
+        .dropdown-content a:nth-child(2)::before { background: linear-gradient(to bottom, #4FC3F7, #1976D2); }
+        .dropdown-content a:nth-child(3)::before { background: linear-gradient(to bottom, #66BB6A, #388E3C); }
+        .dropdown-content a:nth-child(4)::before { background: linear-gradient(to bottom, #FFD54F, #F57C00); }
+        .dropdown-content a:nth-child(5)::before { background: linear-gradient(to bottom, #4FC3F7, #66BB6A); }
+        .dropdown-content a:nth-child(6)::before { background: linear-gradient(to bottom, #FF6B9D, #FFD54F); }
+
+        .dropdown-content a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #000000;
+            padding-left: 2rem;
+        }
+
+        .dropdown-content a:nth-child(1):hover { background: rgba(255, 107, 157, 0.1); }
+        .dropdown-content a:nth-child(2):hover { background: rgba(79, 195, 247, 0.1); }
+        .dropdown-content a:nth-child(3):hover { background: rgba(102, 187, 106, 0.1); }
+        .dropdown-content a:nth-child(4):hover { background: rgba(255, 213, 79, 0.1); }
+        .dropdown-content a:nth-child(5):hover { background: rgba(79, 195, 247, 0.1); }
+        .dropdown-content a:nth-child(6):hover { background: rgba(255, 107, 157, 0.1); }
+
+        .header {
+            text-align: center;
+            padding: 140px 0 60px 0;
+            background: #FFFFFF;
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .header-box {
+            background: var(--pastel-purple);
+            border: 2px solid var(--soft-purple);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+            box-shadow: 0 8px 25px rgba(206, 147, 216, 0.2);
+        }
+
+        .header h1 {
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #E91E63, #2196F3, #4CAF50, #FF9800);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 25px;
+            animation: colorfulText 8s ease infinite;
+            letter-spacing: -2px;
+        }
+
+        @keyframes colorfulText {
+            0% { background-position: 0% 50%; }
+            25% { background-position: 25% 25%; }
+            50% { background-position: 100% 50%; }
+            75% { background-position: 75% 75%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .header p {
+            font-size: 1.4rem;
+            color: #7B1FA2;
+            font-weight: 600;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .course-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+            margin-bottom: 80px;
+            position: relative;
+        }
+
+        .course-card {
+            background: #FFFFFF;
+            border: 2px solid var(--border-light);
+            border-radius: 20px;
+            padding: 40px;
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .course-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        /* Course specific styling matching button colors */
+        .course-card:nth-child(1) {
+            background: var(--course1-light);
+            border-color: var(--course1-medium);
+        }
+        .course-card:nth-child(1):hover {
+            border-color: #FF6B9D;
+        }
+
+        .course-card:nth-child(2) {
+            background: var(--course2-light);
+            border-color: var(--course2-medium);
+        }
+        .course-card:nth-child(2):hover {
+            border-color: #4FC3F7;
+        }
+
+        .course-card:nth-child(3) {
+            background: var(--course3-light);
+            border-color: var(--course3-medium);
+        }
+        .course-card:nth-child(3):hover {
+            border-color: #66BB6A;
+        }
+
+        .course-card:nth-child(4) {
+            background: var(--course4-light);
+            border-color: var(--course4-medium);
+        }
+        .course-card:nth-child(4):hover {
+            border-color: #FFD54F;
+        }
+
+        .course-card:nth-child(5) {
+            background: var(--course5-light);
+            border-color: var(--course5-medium);
+        }
+        .course-card:nth-child(5):hover {
+            border-color: #4FC3F7;
+        }
+
+        .course-card:nth-child(6) {
+            background: var(--course6-light);
+            border-color: var(--course6-medium);
+        }
+        .course-card:nth-child(6):hover {
+            border-color: #FF6B9D;
+        }
+
+        .course-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .course-card:nth-child(1)::before { background: linear-gradient(90deg, var(--soft-pink), #FF6B9D); }
+        .course-card:nth-child(2)::before { background: linear-gradient(90deg, var(--soft-blue), #4FC3F7); }
+        .course-card:nth-child(3)::before { background: linear-gradient(90deg, var(--soft-green), #66BB6A); }
+        .course-card:nth-child(4)::before { background: linear-gradient(90deg, var(--soft-yellow), #FFD54F); }
+        .course-card:nth-child(5)::before { background: linear-gradient(90deg, #4FC3F7, var(--soft-green)); }
+        .course-card:nth-child(6)::before { background: linear-gradient(90deg, #FF6B9D, var(--soft-yellow)); }
+
+        .course-content {
+            flex: 1;
+        }
+
+        .course-sidebar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            min-width: 200px;
+            padding-left: 20px;
+            border-left: 1px solid var(--border-light);
+        }
+
+        .course-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .course-card:nth-child(1) .course-number { background: linear-gradient(45deg, #FF6B9D, #C2185B); }
+        .course-card:nth-child(2) .course-number { background: linear-gradient(45deg, #4FC3F7, #1976D2); }
+        .course-card:nth-child(3) .course-number { background: linear-gradient(45deg, #66BB6A, #388E3C); }
+        .course-card:nth-child(4) .course-number { background: linear-gradient(45deg, #FFD54F, #F57C00); }
+        .course-card:nth-child(5) .course-number { background: linear-gradient(45deg, #4FC3F7, #66BB6A); }
+        .course-card:nth-child(6) .course-number { background: linear-gradient(45deg, #FF6B9D, #FFD54F); }
+
+        .course-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            line-height: 1.2;
+            letter-spacing: -1px;
+        }
+
+        .course-duration {
+            color: var(--text-medium);
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 25px;
+            border: 1px solid;
+        }
+
+        /* Course specific duration colors */
+        .course-card:nth-child(1) .course-duration {
+            background: rgba(255, 107, 157, 0.1);
+            border-color: rgba(255, 107, 157, 0.3);
+            color: #C2185B;
+        }
+
+        .course-card:nth-child(2) .course-duration {
+            background: rgba(79, 195, 247, 0.1);
+            border-color: rgba(79, 195, 247, 0.3);
+            color: #1976D2;
+        }
+
+        .course-card:nth-child(3) .course-duration {
+            background: rgba(102, 187, 106, 0.1);
+            border-color: rgba(102, 187, 106, 0.3);
+            color: #388E3C;
+        }
+
+        .course-card:nth-child(4) .course-duration {
+            background: rgba(255, 213, 79, 0.1);
+            border-color: rgba(255, 213, 79, 0.3);
+            color: #F57C00;
+        }
+
+        .course-card:nth-child(5) .course-duration {
+            background: rgba(79, 195, 247, 0.1);
+            border-color: rgba(79, 195, 247, 0.3);
+            color: #00796B;
+        }
+
+        .course-card:nth-child(6) .course-duration {
+            background: rgba(255, 152, 0, 0.1);
+            border-color: rgba(255, 152, 0, 0.3);
+            color: #E65100;
+        }
+
+        .course-status {
+            background: #F3F4F6;
+            color: var(--text-dark);
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-light);
+        }
+
+        .course-button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .course-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .curriculum {
+            margin-top: 25px;
+        }
+
+        .curriculum h4 {
+            color: var(--text-dark);
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .week-item {
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 1px solid;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Course specific week item colors */
+        .course-card:nth-child(1) .week-item {
+            background: rgba(255, 107, 157, 0.05);
+            border-color: rgba(255, 107, 157, 0.2);
+        }
+        .course-card:nth-child(1) .week-item:hover {
+            background: rgba(255, 107, 157, 0.1);
+        }
+
+        .course-card:nth-child(2) .week-item {
+            background: rgba(79, 195, 247, 0.05);
+            border-color: rgba(79, 195, 247, 0.2);
+        }
+        .course-card:nth-child(2) .week-item:hover {
+            background: rgba(79, 195, 247, 0.1);
+        }
+
+        .course-card:nth-child(3) .week-item {
+            background: rgba(102, 187, 106, 0.05);
+            border-color: rgba(102, 187, 106, 0.2);
+        }
+        .course-card:nth-child(3) .week-item:hover {
+            background: rgba(102, 187, 106, 0.1);
+        }
+
+        .course-card:nth-child(4) .week-item {
+            background: rgba(255, 213, 79, 0.05);
+            border-color: rgba(255, 213, 79, 0.2);
+        }
+        .course-card:nth-child(4) .week-item:hover {
+            background: rgba(255, 213, 79, 0.1);
+        }
+
+        .course-card:nth-child(5) .week-item {
+            background: rgba(79, 195, 247, 0.05);
+            border-color: rgba(79, 195, 247, 0.2);
+        }
+        .course-card:nth-child(5) .week-item:hover {
+            background: rgba(79, 195, 247, 0.1);
+        }
+
+        .course-card:nth-child(6) .week-item {
+            background: rgba(255, 152, 0, 0.05);
+            border-color: rgba(255, 152, 0, 0.2);
+        }
+        .course-card:nth-child(6) .week-item:hover {
+            background: rgba(255, 152, 0, 0.1);
+        }
+
+        .week-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .course-card:nth-child(1) .week-item::before { background: linear-gradient(to bottom, #FF6B9D, #C2185B); }
+        .course-card:nth-child(2) .week-item::before { background: linear-gradient(to bottom, #4FC3F7, #1976D2); }
+        .course-card:nth-child(3) .week-item::before { background: linear-gradient(to bottom, #66BB6A, #388E3C); }
+        .course-card:nth-child(4) .week-item::before { background: linear-gradient(to bottom, #FFD54F, #F57C00); }
+        .course-card:nth-child(5) .week-item::before { background: linear-gradient(to bottom, #4FC3F7, #66BB6A); }
+        .course-card:nth-child(6) .week-item::before { background: linear-gradient(to bottom, #FF6B9D, #FFD54F); }
+
+        .week-item:hover {
+            transform: translateX(5px);
+        }
+
+        .week-item:hover::before {
+            width: 6px;
+        }
+
+        .week-title {
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .week-content {
+            font-size: 0.9rem;
+            color: #6B7280;
+            line-height: 1.6;
+        }
+
+        .week-content ul {
+            padding-left: 20px;
+            margin-top: 10px;
+        }
+
+        .week-content li {
+            margin-bottom: 6px;
+        }
+
+        .special-features {
+            color: var(--text-dark);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 25px;
+            border: 1px solid;
+        }
+
+        /* Course specific special features colors */
+        .course-card:nth-child(1) .special-features {
+            background: rgba(255, 107, 157, 0.08);
+            border-color: rgba(255, 107, 157, 0.25);
+        }
+
+        .course-card:nth-child(2) .special-features {
+            background: rgba(79, 195, 247, 0.08);
+            border-color: rgba(79, 195, 247, 0.25);
+        }
+
+        .course-card:nth-child(3) .special-features {
+            background: rgba(102, 187, 106, 0.08);
+            border-color: rgba(102, 187, 106, 0.25);
+        }
+
+        .course-card:nth-child(4) .special-features {
+            background: rgba(255, 213, 79, 0.08);
+            border-color: rgba(255, 213, 79, 0.25);
+        }
+
+        .course-card:nth-child(5) .special-features {
+            background: rgba(79, 195, 247, 0.08);
+            border-color: rgba(79, 195, 247, 0.25);
+        }
+
+        .course-card:nth-child(6) .special-features {
+            background: rgba(255, 152, 0, 0.08);
+            border-color: rgba(255, 152, 0, 0.25);
+        }
+
+        .special-features h4 {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .special-features ul {
+            padding-left: 20px;
+        }
+
+        .special-features li {
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .footer {
+            border-top: 1px solid var(--border-light);
+            padding: 60px 0 40px 0;
+            margin-top: 80px;
+            background: #FFFFFF;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .company-info, .contact-info {
+            background: var(--pastel-purple);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid var(--soft-purple);
+            box-shadow: 0 4px 15px rgba(206, 147, 216, 0.1);
+        }
+
+        .company-info h3, .contact-info h3 {
+            color: #7B1FA2;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--soft-purple);
+        }
+
+        .company-info p, .contact-info p {
+            color: var(--text-medium);
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        .company-info strong, .contact-info strong {
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .highlight {
+            background: linear-gradient(45deg, #FF6B9D, #4FC3F7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        @media (max-width: 1024px) {
+            .course-card {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .course-sidebar {
+                flex-direction: row;
+                justify-content: center;
+                padding-left: 0;
+                border-left: none;
+                border-top: 1px solid var(--border-light);
+                padding-top: 20px;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .about-grid,
+            .contact-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .nav-menu {
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .header p {
+                font-size: 1.2rem;
+            }
+
+            .course-card {
+                padding: 25px;
+            }
+
+            .course-title {
+                font-size: 1.6rem;
+            }
+
+            .course-sidebar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .course-status, .course-button {
+                text-align: center;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .solutions-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .portfolio-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .course-card:nth-child(1) { animation-delay: 0.1s; }
+        .course-card:nth-child(2) { animation-delay: 0.2s; }
+        .course-card:nth-child(3) { animation-delay: 0.3s; }
+        .course-card:nth-child(4) { animation-delay: 0.4s; }
+        .course-card:nth-child(5) { animation-delay: 0.5s; }
+        .course-card:nth-child(6) { animation-delay: 0.6s; }
+
+        /* Chatbot Banner Styles */
+        .chatbot-banner {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10000;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50px;
+            padding: 15px 20px;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-weight: 600;
+            min-width: 200px;
+        }
+
+        .chatbot-banner:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .chatbot-banner.minimized {
+            min-width: 60px;
+            padding: 15px;
+            border-radius: 50%;
+        }
+
+        .chatbot-banner.minimized .chatbot-text {
+            display: none;
+        }
+
+        .chatbot-icon {
+            font-size: 1.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .chatbot-text {
+            font-size: 0.9rem;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Custom GPT Chat Container */
+        #customgpt_chat {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            display: none;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            width: 800px;
+            height: 600px;
+        }
+
+        #customgpt_chat.active {
+            display: block;
+        }
+
+        /* Chat overlay background */
+        .chat-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+
+        .chat-overlay.active {
+            display: block;
+        }
+
+        /* Mobile responsive adjustments */
+        @media (max-width: 768px) {
+            .chatbot-banner {
+                bottom: 15px;
+                right: 15px;
+                left: 15px;
+                min-width: auto;
+                justify-content: center;
+            }
+
+            .chatbot-banner.minimized {
+                left: auto;
+                min-width: 50px;
+                padding: 12px;
+            }
+
+            #customgpt_chat {
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: calc(100vw - 30px);
+                height: 70vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-header">
+        <div class="nav-container">
+            <div class="logo">Phoenix AI</div>
+            <ul class="nav-menu">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li class="dropdown">
+                    <a href="#courses">과정소개</a>
+                    <div class="dropdown-content">
+                        <a href="Phoenix-ai_1th-1_basic_course.html">Course 1 - Business Basic</a>
+                        <a href="Phoenix-ai_1th-2_master_course.html">Course 2 - Business Master</a>
+                        <a href="Phoenix-ai_1th-3_agent_course.html">Course 3 - Business Agent</a>
+                        <a href="Phoenix-ai_1th-4_challenge_course.html">Course 4 - Business Challenge</a>
+                        <a href="Phoenix-ai_1th-5_hackathon_course.html">Course 5 - Business Hackathon</a>
+                        <a href="Phoenix-ai_1th-6_partnership_course.html">Course 6 - Business Partnership</a>
+                    </div>
+                </li>
+                <li><a href="#premium">프리미엄 서비스</a></li>
+                <li><a href="#solutions">솔루션</a></li>
+                <li><a href="#portfolio">Portfolio</a></li>
+                <li><a href="#ceo">CEO</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header class="header fade-in" id="home">
+            <div class="header-box">
+                <h1>AI신승 세무사</h1>
+                <p>AI 기술을 활용한 <span class="highlight">전문 세무 상담 서비스</span>로 비즈니스 성장을 도와드립니다</p>
+            </div>
+        </header>
+
+        <!-- About Section -->
+        <section class="section about" id="about">
+            <div class="container">
+                <h2 class="section-title fade-in">About AI신승 세무사</h2>
+                <div class="about-grid">
+                    <div class="about-text fade-in">
+                        <h3>AI 기반 전문 세무 상담</h3>
+                        <p>최신 AI 기술을 활용하여 세무 상담의 새로운 패러다임을 제시합니다. 복잡한 세무 문제를 빠르고 정확하게 분석하고, 맞춤형 솔루션을 제공합니다.</p>
+                        <p>기업의 세무 관리 효율성을 극대화하고, 세무 리스크를 최소화하여 비즈니스 성장을 지원하는 전문 서비스를 제공합니다.</p>
+                    </div>
+                    <div class="stats fade-in">
+                        <div class="stat">
+                            <span class="stat-number">15+</span>
+                            <div class="stat-label">세무 경력</div>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">500+</span>
+                            <div class="stat-label">상담 완료</div>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">98%</span>
+                            <div class="stat-label">고객 만족도</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Section -->
+        <section class="section" id="courses">
+            <div class="container">
+                <h2 class="section-title fade-in">AI 세무 상담 서비스</h2>
+                <p class="section-subtitle fade-in">전문적인 AI 기반 세무 상담 솔루션</p>
+                
+                <div class="course-grid">
+                    <!-- Service 1: AI Tax Consultation -->
+                    <div class="course-card fade-in" id="course1">
+                        <div class="course-content">
+                            <div class="course-number">Service 1</div>
+                            <h2 class="course-title">AI 세무 상담 서비스</h2>
+                            <div class="course-duration">실시간 AI 기반 세무 상담 및 분석</div>
+                            
+                            <div class="curriculum">
+                                <h4>📊 주요 서비스</h4>
+                                
+                                <div class="week-item">
+                                    <div class="week-title">세무 분석 및 진단</div>
+                                    <div class="week-content">
+                                        <ul>
+                                            <li><strong>AI 분석:</strong> 기업 세무 데이터 실시간 분석</li>
+                                            <li><strong>리스크 평가:</strong> 세무 리스크 자동 진단 및 예측</li>
+                                            <li><strong>최적화 방안:</strong> 세무 효율성 개선 방안 제시</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="week-item">
+                                    <div class="week-title">세무 신고 지원</div>
+                                    <div class="week-content">
+                                        <ul>
+                                            <li><strong>자동화:</strong> 세무 신고 프로세스 자동화</li>
+                                            <li><strong>검증:</strong> 신고 내용 AI 검증 및 오류 방지</li>
+                                            <li><strong>최적화:</strong> 세무 절약 방안 실시간 제안</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="week-item">
+                                    <div class="week-title">세무 규정 모니터링</div>
+                                    <div class="week-content">
+                                        <ul>
+                                            <li><strong>실시간 업데이트:</strong> 세무 법규 변경사항 실시간 알림</li>
+                                            <li><strong>영향 분석:</strong> 법규 변경이 기업에 미치는 영향 분석</li>
+                                            <li><strong>대응 방안:</strong> 새로운 규정에 대한 대응 전략 수립</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="week-item">
+                                    <div class="week-title">세무 교육 및 컨설팅</div>
+                                    <div class="week-content">
+                                        <ul>
+                                            <li><strong>맞춤 교육:</strong> 기업 규모별 세무 교육 프로그램</li>
+                                            <li><strong>전략 수립:</strong> 장기 세무 전략 수립 지원</li>
+                                            <li><strong>성과 관리:</strong> 세무 최적화 성과 측정 및 관리</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="course-sidebar">
+                            <div class="course-status">실시간 서비스</div>
+                            <a href="#" class="course-button">상담 신청</a>
+                        </div>
+                    </div>
+
+                    <!-- Service 2: AI Business Consultation -->
+                    <div class="course-card fade-in" id="course2">
+                        <div class="course-content">
+                            <div class="course-number">Service 2</div>
+                            <h2 class="course-title">AI 비즈니스 컨설팅</h2>
+                            <div class="course-duration">AI 기반 비즈니스 전략 및 최적화 서비스</div>
+                            
+                            <div class="curriculum">
+                                <h4>🎯 주요 영역</h4>
+                                
+                                <div class="week-item">
+                                    <div class="week-title">비즈니스 전략 수립</div>
+                                    <div class="week-content">
+                                        AI 기반 시장 분석, 경쟁사 분석, 비즈니스 모델 최적화 방안 제시
+                                    </div>
+                                </div>
+
+                                <div class="week-item">
+                                    <div class="week-title">운영 효율성 개선</div>
+                                    <div class="week-content">
+                                        프로세스 자동화, 비용 최적화, 생산성 향상 방안 컨설팅<br>
+                                        AI 도구 도입 및 활용 전략 수립
+                                    </div>
+                                </div>
+
+                                <div class="week-item">
+                                    <div class="week-title">디지털 전환 지원</div>
+                                    <div class="week-content">
+                                        디지털 기술 도입 전략, 시스템 통합, 데이터 관리 최적화
+                                    </div>
+                                </div>
+
+                                <div class="week-item">
+                                    <div class="week-title">성과 측정 및 관리</div>
+                                    <div class="week-content">
+                                        KPI 설정, 성과 모니터링, 지속적 개선 방안 제시
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="course-sidebar">
+                            <div class="course-status">맞춤형 서비스</div>
+                            <a href="#" class="course-button">컨설팅 신청</a>
+                        </div>
+                    </div>
+
+                    <!-- Service 3: AI Legal Consultation -->
+                    <div class="course-card fade-in" id="course3">
+                        <div class="course-content">
+                            <div class="course-number">Service 3</div>
+                            <h2 class="course-title">AI 법무 상담 서비스</h2>
+                            <div class="course-duration">AI 기반 법무 상담 및 리스크 관리</div>
+                            
+                            <div class="curriculum">
+                                <h4>⚖️ 주요 서비스</h4>
+                                
+                                <div class="week-item">
+                                    <div class="week-title">계약서 검토 및 분석</div>
+                                    <div class="week-content">AI 기반 계약서 자동 검토, 리스크 분석, 개선 방안 제시</div>
+                                </div>
+
+                                <div class="week-item">
+                                    <div class="week-title">법규 준수 모니터링</div>
+                                    <div class="week-content">실시간 법규 변경사항 추적, 준수 여부 자동 점검</div>
+                                </div>
+
+                                <div class="week-item">
+                                    <div class="week-title">분쟁 예방 및 해결</div>
+                                    <div class="week-content">AI 기반 분쟁 예측, 조기 경고 시스템, 해결 방안 제시</div>
+                                </div>
+
+                                <div class="week-item">
+                                    <div class="week-title">지적재산권 보호</div>
+                                    <div class="week-content">특허 검색, 상표 등록, 저작권 보호 전략 수립</div>
+                                </div>
+
+                                <div class="week-item">
+                                    <div class="week-title">규제 대응 지원</div>
+                                    <div class="week-content">새로운 규제 분석, 대응 전략 수립, 준수 방안 제시</div>
+                                </div>
+
+                                <div class="week-item">
+                                    <div class="week-title">법무 자동화</div>
+                                    <div class="week-content">법무 프로세스 자동화, 문서 생성, 검토 시스템 구축</div>
+                                </div>
+
+                                <div class="week-item">
+                                    <div class="week-title">리스크 관리</div>
+                                    <div class="week-content">법적 리스크 평가, 예방 전략, 보험 연계 방안</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="course-sidebar">
+                            <div class="course-status">전문 상담</div>
+                            <a href="#" class="course-button">법무 상담</a>
+                        </div>
+                    </div>
+
+                    <!-- Service 4: AI Financial Planning -->
+                    <div class="course-card fade-in" id="course4">
+                        <div class="course-content">
+                            <div class="course-number">Service 4</div>
+                            <h2 class="course-title">AI 재무 계획 서비스</h2>
+                            <div class="course-duration">AI 기반 재무 분석 및 투자 전략 수립</div>
+                            
+                            <div class="curriculum">
+                                <h4>💰 주요 서비스</h4>
+                                <p><strong>4개 영역 × 10개 분석 모델</strong> (투자·세무·리스크·성장)</p>
+                                
+                                <div class="week-item">
+                                    <div class="week-title">재무 분석 프로세스</div>
+                                    <div class="week-content">
+                                        <ul>
+                                            <li>1. AI 기반 재무 데이터 분석</li>
+                                            <li>2. 투자 포트폴리오 최적화</li>
+                                            <li>3. 리스크 관리 전략 수립</li>
+                                            <li>4. 성장 전략 및 예측 모델링</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="special-features">
+                                <h4>✨ 특징</h4>
+                                <ul>
+                                    <li>실시간 시장 데이터 분석 및 예측</li>
+                                    <li>개인/기업 맞춤형 투자 전략 수립</li>
+                                    <li>리스크 관리 및 자산 배분 최적화</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="course-sidebar">
+                            <div class="course-status">맞춤형 서비스</div>
+                            <a href="#" class="course-button">재무 상담</a>
+                        </div>
+                    </div>
+
+                    <!-- Service 5: AI HR Consulting -->
+                    <div class="course-card fade-in" id="course5">
+                        <div class="course-content">
+                            <div class="course-number">Service 5</div>
+                            <h2 class="course-title">AI 인사 컨설팅 서비스</h2>
+                            <div class="course-duration">AI 기반 인사 관리 및 조직 최적화</div>
+                            
+                            <div class="curriculum">
+                                <h4>👥 주요 서비스</h4>
+                                
+                                <div class="week-item">
+                                    <div class="week-title">인사 전략 수립</div>
+                                    <div class="week-content">AI 기반 인사 정책 수립, 조직 문화 개선 방안 제시</div>
+                                </div>
+
+                                <div class="week-item">
+                                    <div class="week-title">채용 및 인재 관리</div>
+                                    <div class="week-content">
+                                        <ul>
+                                            <li>AI 기반 인재 발굴 및 매칭 시스템</li>
+                                            <li>성과 평가 및 인사고과 자동화</li>
+                                            <li>인재 육성 및 교육 프로그램 설계</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="special-features">
+                                <h4>🔥 특징</h4>
+                                <ul>
+                                    <li>데이터 기반 인사 의사결정 지원</li>
+                                    <li>조직 문화 및 만족도 개선 전략</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="course-sidebar">
+                            <div class="course-status">전문 컨설팅</div>
+                            <a href="#" class="course-button">인사 상담</a>
+                        </div>
+                    </div>
+
+                    <!-- Service 6: AI Digital Transformation -->
+                    <div class="course-card fade-in" id="course6">
+                        <div class="course-content">
+                            <div class="course-number">Service 6</div>
+                            <h2 class="course-title">AI 디지털 전환 서비스</h2>
+                            <div class="course-duration">기업 디지털 전환 및 AI 도입 전략</div>
+                            
+                            <div class="curriculum">
+                                <h4>🚀 주요 서비스</h4>
+                                
+                                <div class="week-item">
+                                    <div class="week-title">디지털 전환 전략</div>
+                                    <div class="week-content">기업 규모별 맞춤형 디지털 전환 로드맵 수립</div>
+                                </div>
+
+                                <div class="week-item">
+                                    <div class="week-title">AI 도입 및 통합</div>
+                                    <div class="week-content">AI 기술 도입 전략, 시스템 통합, 데이터 관리 최적화</div>
+                                </div>
+
+                                <div class="week-item">
+                                    <div class="week-title">프로세스 자동화</div>
+                                    <div class="week-content">업무 프로세스 자동화, 효율성 향상, 비용 절감</div>
+                                </div>
+
+                                <div class="week-item">
+                                    <div class="week-title">성과 측정 및 관리</div>
+                                    <div class="week-content">디지털 전환 성과 측정, KPI 설정, 지속적 개선</div>
+                                </div>
+                            </div>
+
+                            <div class="special-features">
+                                <h4>💼 전환 혜택</h4>
+                                <ul>
+                                    <li>업무 효율성 50% 이상 향상</li>
+                                    <li>운영 비용 30% 절감</li>
+                                    <li>고객 만족도 및 서비스 품질 개선</li>
+                                    <li>경쟁력 강화 및 시장 점유율 확대</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="course-sidebar">
+                            <div class="course-status">전략 컨설팅</div>
+                            <a href="#" class="course-button">전환 상담</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Premium Service Section -->
+        <section class="section" id="premium" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <div class="container">
+                <h2 class="section-title fade-in" style="color: white;">🏆 프리미엄 AI 상담 서비스</h2>
+                <p class="section-subtitle fade-in" style="color: rgba(255,255,255,0.9);">6개 분야 전문 AI 상담 서비스를 통해 기업의 디지털 전환과 비즈니스 성장을 함께 합니다!</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; margin: 3rem 0;" class="fade-in">
+                    <div style="text-align: center; background: rgba(255, 255, 255, 0.1); padding: 2rem; border-radius: 15px; backdrop-filter: blur(10px);">
+                        <div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0.5rem;">500+</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9;">상담 완료</div>
+                    </div>
+                    <div style="text-align: center; background: rgba(255, 255, 255, 0.1); padding: 2rem; border-radius: 15px; backdrop-filter: blur(10px);">
+                        <div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0.5rem;">6</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9;">전문 분야</div>
+                    </div>
+                    <div style="text-align: center; background: rgba(255, 255, 255, 0.1); padding: 2rem; border-radius: 15px; backdrop-filter: blur(10px);">
+                        <div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0.5rem;">15+</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9;">년 경력</div>
+                    </div>
+                    <div style="text-align: center; background: rgba(255, 255, 255, 0.1); padding: 2rem; border-radius: 15px; backdrop-filter: blur(10px);">
+                        <div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0.5rem;">98%</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9;">고객 만족도</div>
+                    </div>
+                </div>
+
+                <div style="background: rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 3rem; margin: 3rem 0; backdrop-filter: blur(10px);" class="fade-in">
+                    <h3 style="font-size: 2rem; margin-bottom: 2rem; text-align: center; font-weight: 700;">🔄 4단계 상담 프로세스</h3>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem;">
+                        <div style="text-align: center; position: relative;">
+                            <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; font-size: 2rem; backdrop-filter: blur(10px);">📋</div>
+                            <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem;">상담 신청</div>
+                            <div style="font-size: 0.9rem; opacity: 0.9; line-height: 1.4;">초기 상담 및<br>요구사항 파악</div>
+                        </div>
+                        <div style="text-align: center; position: relative;">
+                            <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; font-size: 2rem; backdrop-filter: blur(10px);">🔍</div>
+                            <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem;">현황 분석</div>
+                            <div style="font-size: 0.9rem; opacity: 0.9; line-height: 1.4;">AI 기반 데이터<br>분석 및 진단</div>
+                        </div>
+                        <div style="text-align: center; position: relative;">
+                            <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; font-size: 2rem; backdrop-filter: blur(10px);">💡</div>
+                            <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem;">솔루션 제시</div>
+                            <div style="font-size: 0.9rem; opacity: 0.9; line-height: 1.4;">맞춤형 전략<br>및 방안 제시</div>
+                        </div>
+                        <div style="text-align: center; position: relative;">
+                            <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; font-size: 2rem; backdrop-filter: blur(10px);">✅</div>
+                            <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem;">구현 및 지원</div>
+                            <div style="font-size: 0.9rem; opacity: 0.9; line-height: 1.4;">실행 지원 및<br>지속적 관리</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Solutions Section -->
+        <section class="section solutions" id="solutions">
+            <div class="container">
+                <h2 class="section-title fade-in">주요 AI 상담 솔루션</h2>
+                <p class="section-subtitle fade-in">AI 기술을 활용한 전문적인 상담 서비스를 제공합니다</p>
+                <div class="solutions-grid">
+                    <div class="solution-card fade-in">
+                        <div class="solution-icon">📊</div>
+                        <h3>AI 세무 분석</h3>
+                        <p>AI 기술을 활용한 실시간 세무 데이터 분석 및 리스크 평가를 통해 최적의 세무 전략을 제시합니다.</p>
+                    </div>
+                    <div class="solution-card fade-in">
+                        <div class="solution-icon">💼</div>
+                        <h3>비즈니스 컨설팅</h3>
+                        <p>AI 기반 시장 분석과 경쟁사 분석을 통해 비즈니스 전략 수립 및 운영 효율성 개선을 지원합니다.</p>
+                    </div>
+                    <div class="solution-card fade-in">
+                        <div class="solution-icon">⚖️</div>
+                        <h3>법무 상담</h3>
+                        <p>AI 기반 계약서 검토, 법규 준수 모니터링, 분쟁 예방 및 해결을 위한 전문적인 법무 상담을 제공합니다.</p>
+                    </div>
+                    <div class="solution-card fade-in">
+                        <div class="solution-icon">💰</div>
+                        <h3>재무 계획</h3>
+                        <p>AI 기반 재무 분석, 투자 포트폴리오 최적화, 리스크 관리 전략을 통한 맞춤형 재무 계획을 수립합니다.</p>
+                    </div>
+                    <div class="solution-card fade-in">
+                        <div class="solution-icon">👥</div>
+                        <h3>인사 컨설팅</h3>
+                        <p>AI 기반 인재 발굴, 성과 평가, 조직 문화 개선을 통한 효과적인 인사 관리 전략을 제시합니다.</p>
+                    </div>
+                    <div class="solution-card fade-in">
+                        <div class="solution-icon">🚀</div>
+                        <h3>디지털 전환</h3>
+                        <p>기업의 디지털 전환 전략 수립, AI 도입 및 통합, 프로세스 자동화를 통한 경쟁력 강화를 지원합니다.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Portfolio Section -->
+        <section class="section portfolio" id="portfolio">
+            <div class="container">
+                <h2 class="section-title fade-in">주요 상담 사례</h2>
+                <div class="portfolio-grid">
+                    <div class="portfolio-item fade-in">
+                        <h4>중소기업 세무 최적화</h4>
+                        <p>AI 기반 세무 분석을 통한 연간 세무 부담 30% 절감 달성</p>
+                    </div>
+                    <div class="portfolio-item fade-in">
+                        <h4>스타트업 비즈니스 전략</h4>
+                        <p>AI 시장 분석을 통한 새로운 비즈니스 모델 개발 및 매출 200% 증가</p>
+                    </div>
+                    <div class="portfolio-item fade-in">
+                        <h4>법무 리스크 관리</h4>
+                        <p>AI 기반 계약서 검토 시스템 구축으로 법적 분쟁 90% 감소</p>
+                    </div>
+                    <div class="portfolio-item fade-in">
+                        <h4>기업 디지털 전환</h4>
+                        <p>AI 도입을 통한 업무 효율성 50% 향상 및 운영 비용 25% 절감</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CEO Section -->
+        <section class="section ceo" id="ceo">
+            <div class="container">
+                <h2 class="section-title fade-in">AI신승 세무사 소개</h2>
+                <div class="ceo-card fade-in">
+                    <div class="ceo-avatar">
+                        <div style="font-size: 3rem;">👨‍💼</div>
+                    </div>
+                    <h3 class="ceo-name">AI신승 세무사</h3>
+                    <p class="ceo-title">AI 기반 전문 세무 상담사 | 비즈니스 컨설팅 전문가</p>
+                    <div class="ceo-description">
+                        <p><strong>전문 분야:</strong></p>
+                        <ul>
+                            <li>AI 기반 세무 분석 및 최적화</li>
+                            <li>비즈니스 전략 수립 및 컨설팅</li>
+                            <li>법무 리스크 관리 및 상담</li>
+                            <li>재무 계획 및 투자 전략</li>
+                        </ul>
+                        <p><strong>주요 경력:</strong></p>
+                        <ul>
+                            <li>15년 이상 세무 및 비즈니스 컨설팅 경력</li>
+                            <li>500개 이상 기업 세무 상담 완료</li>
+                            <li>AI 기술을 활용한 세무 최적화 전문가</li>
+                            <li>중소기업 디지털 전환 컨설팅 전문가</li>
+                        </ul>
+                        <p><strong>AI 기술 활용:</strong></p>
+                        <ul>
+                            <li>AI 기반 세무 데이터 분석 및 예측</li>
+                            <li>머신러닝을 활용한 리스크 평가</li>
+                            <li>자연어 처리를 통한 법규 모니터링</li>
+                            <li>빅데이터 분석을 통한 비즈니스 인사이트 도출</li>
+                        </ul>
+                        <p><strong>자격 및 인증:</strong></p>
+                        <ul>
+                            <li>공인회계사 자격증 보유</li>
+                            <li>세무사 자격증 보유</li>
+                            <li>AI 전문가 인증 (Google, Microsoft)</li>
+                            <li>데이터 분석 전문가 인증</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section class="section contact" id="contact">
+            <div class="container">
+                <h2 class="section-title fade-in" style="color: white;">연락처</h2>
+                <div class="contact-grid">
+                    <div class="contact-info fade-in">
+                        <h3>Get In Touch</h3>
+                        <div class="contact-item">
+                            <i>📞</i>
+                            <span>070-8064-6118</span>
+                        </div>
+                        <div class="contact-item">
+                            <i>📧</i>
+                            <span>phoenixai.edu@gmail.com</span>
+                        </div>
+                        <div class="contact-item">
+                            <i>📍</i>
+                            <span>B-497, 202 Dasanjigeum-ro, Namyangju-si</span>
+                        </div>
+                    </div>
+                    <form class="contact-form fade-in">
+                        <div class="form-group">
+                            <input type="text" placeholder="이름" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" placeholder="이메일" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" placeholder="회사명">
+                        </div>
+                        <div class="form-group">
+                            <textarea placeholder="문의사항"></textarea>
+                        </div>
+                        <button type="submit" class="submit-btn">문의하기</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer fade-in">
+            <div class="footer-content">
+                <div class="company-info">
+                    <h3>AI신승 세무사</h3>
+                    <p><strong>AI 기반 전문 세무 상담 서비스</strong></p>
+                    <p>15년 이상의 세무 경험과 최신 AI 기술을 결합한 전문 상담 서비스</p>
+                    <br>
+                    <p><strong>대표</strong> AI신승 세무사</p>
+                    <p><strong>개인정보책임관리자</strong> AI신승 세무사</p>
+                    <p><strong>사업자번호</strong> 123-45-67890</p>
+                    <p><strong>세무사 등록번호</strong> 제 2024-001호</p>
+                </div>
+                
+                <div class="contact-info">
+                    <h3>상담 문의</h3>
+                    <p><strong>전화</strong> 02-1234-5678</p>
+                    <p><strong>휴대폰</strong> 010-1234-5678</p>
+                    <p><strong>이메일</strong> ai@shinseung-tax.com</p>
+                    <br>
+                    <p><strong>상담시간</strong></p>
+                    <p>평일 09:00~18:00</p>
+                    <p>(점심시간 12:00~13:00 / 주말 및 공휴일 제외)</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Chatbot Banner -->
+    <div class="chatbot-banner" id="chatbotBanner">
+        <div class="chatbot-icon">🤖</div>
+        <div class="chatbot-text">AI신승 세무사와 상담하기</div>
+    </div>
+
+    <!-- Chat Overlay -->
+    <div class="chat-overlay" id="chatOverlay"></div>
+
+    <!-- Custom GPT Chat Container -->
+    <div id="customgpt_chat"></div>
+
+    <script>
+        // Enhanced scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach((el) => {
+            observer.observe(el);
+        });
+
+        // Enhanced hover effects
+        document.querySelectorAll('.course-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                // Enhanced hover effect without changing border color
+                // as each course has its own specific hover color defined in CSS
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                // Reset any hover effects if needed
+            });
+        });
+
+        // Chatbot functionality
+        const chatbotBanner = document.getElementById('chatbotBanner');
+        const customgptChat = document.getElementById('customgpt_chat');
+        const chatOverlay = document.getElementById('chatOverlay');
+        let isChatOpen = false;
+
+        chatbotBanner.addEventListener('click', () => {
+            if (!isChatOpen) {
+                customgptChat.classList.add('active');
+                chatOverlay.classList.add('active');
+                chatbotBanner.classList.add('minimized');
+                isChatOpen = true;
+            }
+        });
+
+        // Close chat when clicking overlay
+        chatOverlay.addEventListener('click', () => {
+            if (isChatOpen) {
+                customgptChat.classList.remove('active');
+                chatOverlay.classList.remove('active');
+                chatbotBanner.classList.remove('minimized');
+                isChatOpen = false;
+            }
+        });
+
+        // Close chat when clicking outside chat window
+        document.addEventListener('click', (e) => {
+            if (isChatOpen && !customgptChat.contains(e.target) && !chatbotBanner.contains(e.target) && !chatOverlay.contains(e.target)) {
+                customgptChat.classList.remove('active');
+                chatOverlay.classList.remove('active');
+                chatbotBanner.classList.remove('minimized');
+                isChatOpen = false;
+            }
+        });
+    </script>
+    
+    <!-- Custom GPT Chat Script -->
+    <script src="https://cdn.customgpt.ai/js/embed.js" defer div_id="customgpt_chat" p_id="78483" p_key="70bff7b88b38483a3cdbd0a7b0514cee"></script>
+</body>
+</html>
