@@ -3,6 +3,10 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import AnswerCard from '../../components/AnswerCard';
 import EvidencePanel from '../../components/EvidencePanel';
+import FinalAnswer from '../../components/FinalAnswer';
+import TaxCalculator from '../../components/TaxCalculator';
+import HoldingPeriodTimer from '../../components/HoldingPeriodTimer';
+import TaxRateChart from '../../components/TaxRateChart';
 
 export default function AgentPage() {
   const router = useRouter();
@@ -22,22 +26,32 @@ export default function AgentPage() {
     try {
       // TODO: API 호출 구현
       console.log('Query submitted:', query);
-      // 임시 결과 설정
-      setResults({
-        overview: '양도세에 대한 기본 정보...',
-        taxRates: '보유기간별 세율 정보...',
-        considerations: '실무상 유의사항...',
-        legalBasis: '관련 법령 및 근거...',
-        conclusion: '결론 및 권고사항...',
-        evidence: [
-          {
-            domain: 'law.go.kr',
-            title: '양도소득세법 제1조',
-            snippet: '양도소득세에 관한 기본 규정...',
-            url: 'https://law.go.kr/법령/양도소득세법/제1조'
-          }
-        ]
-      });
+             // 임시 결과 설정
+       setResults({
+         overview: '양도세에 대한 기본 정보...',
+         taxRates: '보유기간별 세율 정보...',
+         considerations: '실무상 유의사항...',
+         legalBasis: '관련 법령 및 근거...',
+         conclusion: '결론 및 권고사항...',
+         finalAnswer: {
+           summary: '양도소득세는 부동산 양도 시 발생하는 소득에 대해 과세하는 세금입니다. 장기보유특별공제를 통해 최대 40%까지 세율을 절감할 수 있습니다.',
+           keyPoints: [
+             '3년 이상 보유 + 2년 이상 거주 시 공제 시작',
+             '거주기간이 길수록 공제율 증가 (최대 40%)',
+             '다주택자는 중과세율 적용 가능',
+             '투기과열지구는 추가 제한사항 있음'
+           ],
+           recommendation: '장기보유를 통한 절세 효과를 극대화하고, 전문가 상담을 통해 최적의 양도 시점을 결정하시기 바랍니다.'
+         },
+         evidence: [
+           {
+             domain: 'law.go.kr',
+             title: '양도소득세법 제1조',
+             snippet: '양도소득세에 관한 기본 규정...',
+             url: 'https://law.go.kr/법령/양도소득세법/제1조'
+           }
+         ]
+       });
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -99,43 +113,55 @@ export default function AgentPage() {
           </div>
         )}
 
-        {/* Main Content Grid */}
-        <div className="grid gap-6 md:grid-cols-[2fr_1fr]">
-          {/* Left Column - Answer Cards */}
-          <section className="grid gap-4">
-            <AnswerCard 
-              title="1. 개요/기본 원칙" 
-              content={results?.overview}
-              isLoading={isLoading}
-            />
-            <AnswerCard 
-              title="2. 보유·거주기간/세율 표" 
-              content={results?.taxRates}
-              isLoading={isLoading}
-            />
-            <AnswerCard 
-              title="3. 실무상 유의사항" 
-              content={results?.considerations}
-              isLoading={isLoading}
-            />
-            <AnswerCard 
-              title="4. 관련 법령 및 근거" 
-              content={results?.legalBasis}
-              isLoading={isLoading}
-            />
-            <AnswerCard 
-              title="5. 결론" 
-              content={results?.conclusion}
-              variant="highlight"
-              isLoading={isLoading}
-            />
-          </section>
+                 {/* Main Content Grid */}
+         <div className="grid gap-6 md:grid-cols-[2fr_1fr]">
+           {/* Left Column - Interactive Tools & Answer Cards */}
+           <section className="space-y-6">
+             {/* Interactive Tools */}
+             <div className="grid gap-4 md:grid-cols-2">
+               <TaxCalculator />
+               <HoldingPeriodTimer />
+             </div>
+             
+             <TaxRateChart />
+             
+             {/* Answer Cards */}
+             <div className="grid gap-4">
+               <AnswerCard 
+                 title="1. 개요/기본 원칙" 
+                 content={results?.overview}
+                 isLoading={isLoading}
+               />
+               <AnswerCard 
+                 title="2. 보유·거주기간/세율 표" 
+                 content={results?.taxRates}
+                 isLoading={isLoading}
+               />
+               <AnswerCard 
+                 title="3. 실무상 유의사항" 
+                 content={results?.considerations}
+                 isLoading={isLoading}
+               />
+               <AnswerCard 
+                 title="4. 관련 법령 및 근거" 
+                 content={results?.legalBasis}
+                 isLoading={isLoading}
+               />
+               <AnswerCard 
+                 title="5. 결론" 
+                 content={results?.conclusion}
+                 variant="highlight"
+                 isLoading={isLoading}
+               />
+             </div>
+           </section>
 
-          {/* Right Column - Evidence Panel */}
-          <aside className="sticky top-6 self-start">
-            <EvidencePanel evidence={results?.evidence} isLoading={isLoading} />
-          </aside>
-        </div>
+           {/* Right Column - Final Answer & Evidence Panel */}
+           <aside className="sticky top-6 self-start space-y-6">
+             <FinalAnswer finalAnswer={results?.finalAnswer} isLoading={isLoading} />
+             <EvidencePanel evidence={results?.evidence} isLoading={isLoading} />
+           </aside>
+         </div>
 
         {/* Loading State */}
         {isLoading && (
