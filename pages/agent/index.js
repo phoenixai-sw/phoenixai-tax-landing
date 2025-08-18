@@ -122,38 +122,44 @@ export default function AgentPage() {
            </div>
          )}
 
-         {/* Main Content Grid */}
-         <div className="grid gap-6 md:grid-cols-[2fr_1fr]">
-           {/* Center Column - Answer Cards */}
-           <section className="space-y-4">
-             <AnswerCard 
-               title="1. 개요/기본 원칙" 
-               content={results?.overview}
-               isLoading={isLoading}
-             />
-             <AnswerCard 
-               title="2. 보유·거주기간/세율 표" 
-               content={results?.taxRates}
-               isLoading={isLoading}
-             />
-             <AnswerCard 
-               title="3. 실무상 유의사항" 
-               content={results?.considerations}
-               isLoading={isLoading}
-             />
-             <AnswerCard 
-               title="4. 관련 법령 및 근거" 
-               content={results?.legalBasis}
-               isLoading={isLoading}
-             />
-           </section>
+                   {/* Main Content Grid */}
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Left Column - Answer Cards */}
+            <section className="space-y-4">
+              {results && (
+                <>
+                  <AnswerCard 
+                    title="1. 개요/기본 원칙" 
+                    content={results.overview}
+                    isLoading={isLoading}
+                  />
+                  <AnswerCard 
+                    title="2. 보유·거주기간/세율 표" 
+                    content={results.taxRates}
+                    isLoading={isLoading}
+                  />
+                  <AnswerCard 
+                    title="3. 실무상 유의사항" 
+                    content={results.considerations}
+                    isLoading={isLoading}
+                  />
+                  <AnswerCard 
+                    title="4. 관련 법령 및 근거" 
+                    content={results.legalBasis}
+                    isLoading={isLoading}
+                  />
+                  {/* 추가 답변박스들이 여기에 동적으로 추가될 수 있음 */}
+                </>
+              )}
+            </section>
 
-           {/* Right Column - Final Answer & Evidence Panel */}
-           <aside className="sticky top-6 self-start space-y-6">
-             <FinalAnswer finalAnswer={results?.finalAnswer} isLoading={isLoading} />
-             <EvidencePanel evidence={results?.evidence} isLoading={isLoading} />
-           </aside>
-         </div>
+            {/* Right Column - Final Answer & Evidence Panel */}
+            <aside className="space-y-6">
+              <FinalAnswer finalAnswer={results?.finalAnswer} isLoading={isLoading} />
+              <EvidencePanel evidence={results?.evidence} isLoading={isLoading} />
+              {/* 좌측이 다 차면 추가 답변박스들이 여기로 넘어감 */}
+            </aside>
+          </div>
 
         {/* Loading State */}
         {isLoading && (
