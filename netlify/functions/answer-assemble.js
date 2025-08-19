@@ -25,6 +25,53 @@ async function callInternalFunction(functionName, data) {
   return await response.json();
 }
 
+// --- OpenAI Responses API 헬퍼 ---
+async function callOpenAI({ prompt, model = process.env.OPENAI_MODEL || 'gpt-5', temperature = 0.2, maxOutputTokens = 900 }) {
+  const payload = {
+    model,
+    input: prompt,                 // ✅ Responses API는 input 사용
+    temperature,
+    max_output_tokens: maxOutputTokens, // ✅ max_output_tokens 사용 (chat의 max_tokens 아님)
+    // reasoning: { effort: "medium" }, // 필요 시
+  };
+
+  const res = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const text = await res.text();
+  if (!res.ok) {
+    // 400 본문을 그대로 에러에 붙여 원인 파악이 쉬움
+    throw new Error(`OpenAI ${res.status}: ${text.slice(0, 800)}`);
+  }
+
+  let data;
+  try { data = JSON.parse(text); } catch {
+    throw new Error(`OpenAI response JSON parse failed: ${text.slice(0, 200)}`);
+  }
+
+  // 다양한 포맷 방어적으로 파싱
+  const outputText =
+    data.output_text ??
+    (Array.isArray(data.output)
+      ? data.output
+          .find(x => x.type === "message")?.content?.find(c => c.type === "output_text")?.text
+        ?? data.output.find(x => x.type === "message")?.content?.[0]?.text
+        ?? data.output.find(x => x.type === "output_text")?.text
+      : undefined);
+
+  if (!outputText) {
+    throw new Error(`OpenAI response missing output_text: ${text.slice(0, 200)}`);
+  }
+
+  return { raw: data, text: outputText };
+}
+
 exports.handler = async (event, context) => {
   // CORS 헤더 설정
   const headers = {
@@ -41,6 +88,8 @@ exports.handler = async (event, context) => {
     };
   }
 
+  const DEBUG = process.env.DEBUG_ANSWER === 'true';
+
   try {
     const { query, evidencePack, sessionId } = JSON.parse(event.body || '{}');
     
@@ -54,7 +103,7 @@ exports.handler = async (event, context) => {
 
     const startTime = Date.now();
     
-    // 1. Dual-Pass 생성
+    // 1. Dual-Pass 생성 (Responses API 사용)
     const { draftA, draftB } = await generateDualPass(query, evidencePack);
     
     // 2. 충돌 검증
@@ -95,31 +144,55 @@ exports.handler = async (event, context) => {
     };
 
   } catch (error) {
+    const msg = error?.message || String(error);
+    if (DEBUG) console.error("[answer-assemble][DEBUG]", msg, error?.stack);
+    
     console.error('Answer assembly error:', error);
     return {
       statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: 'Answer assembly failed', details: error.message })
+      headers: { "content-type": "application/json; charset=utf-8" },
+      body: JSON.stringify({ ok: false, error: 'Answer assembly failed', details: msg })
     };
   }
 };
 
 async function generateDualPass(query, evidencePack) {
   const openaiApiKey = process.env.OPENAI_API_KEY;
-  const model = process.env.OPENAI_MODEL || 'gpt-5';
   
   if (!openaiApiKey) {
     throw new Error('OpenAI API key not configured');
   }
 
   try {
-    // Draft A: 증거팩 포함 (재시도 로직 추가)
-    const draftA = await retryWithTimeout(() => generateWithEvidence(query, evidencePack, model), 3);
-    
-    // Draft B: 증거팩 미포함 (재시도 로직 추가)
-    const draftB = await retryWithTimeout(() => generateWithoutEvidence(query, model), 3);
+    const SYSTEM_PROMPT = process.env.SYSTEM_PROMPT ?? createTaxSystemPrompt();
 
-    return { draftA, draftB };
+    function buildUserPrompt(q, ctx) {
+      // 필요 시 컨텍스트 문자열화
+      const ctxStr = Array.isArray(ctx) && ctx.length
+        ? ctx.map((c,i)=>`[${i+1}] ${c.title}\n${c.snippet || c.content || ''}`).join("\n\n")
+        : "(no RAG ctx)";
+      return `SYSTEM:\n${SYSTEM_PROMPT}\n\nUSER:\n질문: ${q}\n\nCONTEXT:\n${ctxStr}`;
+    }
+
+    const ctx = evidencePack?.evidence || []; // RAG 미사용이면 빈배열로
+
+    // ✅ Responses API로 교체
+    const draftAResult = await callOpenAI({
+      prompt: buildUserPrompt(query, ctx),           // 컨텍스트 포함 버전
+      temperature: 0.2,
+      maxOutputTokens: 900
+    });
+
+    const draftBResult = await callOpenAI({
+      prompt: `SYSTEM:\n${SYSTEM_PROMPT}\n\nUSER:\n${query}`,   // 컨텍스트 미포함 버전
+      temperature: 0.2,
+      maxOutputTokens: 900
+    });
+
+    return { 
+      draftA: { content: draftAResult.text, tokens: 0, model: process.env.OPENAI_MODEL || 'gpt-5' },
+      draftB: { content: draftBResult.text, tokens: 0, model: process.env.OPENAI_MODEL || 'gpt-5' }
+    };
   } catch (error) {
     console.error('Dual-pass generation failed:', error);
     throw new Error(`GPT generation failed: ${error.message}`);
@@ -148,62 +221,6 @@ async function retryWithTimeout(fn, maxRetries = 3) {
   throw lastError;
 }
 
-async function generateWithEvidence(query, evidencePack, model) {
-  const systemPrompt = createTaxSystemPrompt();
-  const userPrompt = createEvidencePrompt(query, evidencePack);
-
-  const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-    model,
-    messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userPrompt }
-    ],
-    temperature: 0.2,
-    max_tokens: 1500,
-    top_p: 0.9
-  }, {
-    headers: {
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-      'Content-Type': 'application/json'
-    },
-    timeout: 45000 // 45초로 증가 (Netlify Function 타임아웃 고려)
-  });
-
-  return {
-    content: response.data.choices[0].message.content,
-    tokens: response.data.usage.total_tokens,
-    model: model
-  };
-}
-
-async function generateWithoutEvidence(query, model) {
-  const systemPrompt = createTaxSystemPrompt();
-  const userPrompt = `다음 양도소득세 질문에 대해 답변해주세요: ${query}`;
-
-  const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-    model,
-    messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userPrompt }
-    ],
-    temperature: 0.2,
-    max_tokens: 1500,
-    top_p: 0.9
-  }, {
-    headers: {
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-      'Content-Type': 'application/json'
-    },
-    timeout: 45000 // 45초로 증가
-  });
-
-  return {
-    content: response.data.choices[0].message.content,
-    tokens: response.data.usage.total_tokens,
-    model: model
-  };
-}
-
 function createTaxSystemPrompt() {
   return `당신은 한국 양도소득세 전문 AI 세무사입니다. 다음 규칙을 엄격히 준수하세요:
 
@@ -222,23 +239,8 @@ function createTaxSystemPrompt() {
 양도소득세 관련 질문에 대해 정확하고 실용적인 답변을 제공하세요.`;
 }
 
-function createEvidencePrompt(query, evidencePack) {
-  const evidenceText = evidencePack?.evidence?.map(evidence => 
-    `[${evidence.domain}] ${evidence.title}\n${evidence.snippet}\nURL: ${evidence.url}`
-  ).join('\n\n') || '';
-
-  return `다음 양도소득세 질문에 대해 답변해주세요: ${query}
-
-제공된 증거 자료를 참고하여 정확하고 신뢰할 수 있는 답변을 작성해주세요:
-
-${evidenceText}
-
-위 증거 자료를 바탕으로 구조화된 답변을 제공하되, 증거가 불충분한 경우 명시해주세요.`;
-}
-
 async function verifyConflict(draftA, draftB, evidencePack) {
   const openaiApiKey = process.env.OPENAI_API_KEY;
-  const model = process.env.OPENAI_MODEL || 'gpt-5';
   
   if (!openaiApiKey) {
     throw new Error('OpenAI API key not configured');
@@ -246,36 +248,35 @@ async function verifyConflict(draftA, draftB, evidencePack) {
 
   const nliPrompt = createNLIPrompt(draftA.content, draftB.content, evidencePack);
   
-  const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-    model,
-    messages: [
-      { 
-        role: 'system', 
-        content: '당신은 엄격한 NLI(자연어 추론) 판정자입니다. JSON 형식으로만 응답하세요.' 
-      },
-      { role: 'user', content: nliPrompt }
-    ],
-    temperature: 0.0,
-    max_tokens: 500,
-    response_format: { type: "json_object" }
-  }, {
-    headers: {
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-      'Content-Type': 'application/json'
-    },
-    timeout: 30000 // 30초로 증가
-  });
-
   try {
-    const result = JSON.parse(response.data.choices[0].message.content);
+    const result = await callOpenAI({
+      prompt: nliPrompt,
+      temperature: 0.0,
+      maxOutputTokens: 500
+    });
+
+    // JSON 파싱 시도
+    let parsedResult;
+    try {
+      parsedResult = JSON.parse(result.text);
+    } catch (parseError) {
+      console.error('NLI JSON parsing failed:', parseError);
+      // JSON 파싱 실패 시 기본값 반환
+      parsedResult = {
+        conflict_score: 0,
+        conflicts: [],
+        decisive_web_sources: []
+      };
+    }
+
     return {
-      conflict_score: result.conflict_score || 0,
-      decision_mode: determineDecisionMode(result.conflict_score, evidencePack),
-      conflicts: result.conflicts || [],
-      decisive_web_sources: result.decisive_web_sources || []
+      conflict_score: parsedResult.conflict_score || 0,
+      decision_mode: determineDecisionMode(parsedResult.conflict_score, evidencePack),
+      conflicts: parsedResult.conflicts || [],
+      decisive_web_sources: parsedResult.decisive_web_sources || []
     };
   } catch (error) {
-    console.error('NLI parsing error:', error);
+    console.error('NLI analysis failed:', error);
     return {
       conflict_score: 0,
       decision_mode: 'gpt_draft',
@@ -344,33 +345,17 @@ async function assembleFinalAnswer(draftA, draftB, evidencePack, conflictResult)
 }
 
 async function composeFromWeb(evidencePack) {
-  const openaiApiKey = process.env.OPENAI_API_KEY;
-  const model = process.env.OPENAI_MODEL || 'gpt-5';
-  
   const webContent = evidencePack?.evidence?.map(evidence => 
     `[${evidence.domain}] ${evidence.title}\n${evidence.snippet}`
   ).join('\n\n') || '';
 
-  const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-    model,
-    messages: [
-      { role: 'system', content: createTaxSystemPrompt() },
-      { 
-        role: 'user', 
-        content: `다음 웹 증거만을 사용하여 구조화된 답변을 작성하세요:\n\n${webContent}` 
-      }
-    ],
+  const result = await callOpenAI({
+    prompt: `${createTaxSystemPrompt()}\n\n다음 웹 증거만을 사용하여 구조화된 답변을 작성하세요:\n\n${webContent}`,
     temperature: 0.1,
-    max_tokens: 1500
-  }, {
-    headers: {
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-      'Content-Type': 'application/json'
-    },
-    timeout: 45000 // 45초로 증가
+    maxOutputTokens: 900
   });
 
-  return response.data.choices[0].message.content;
+  return result.text;
 }
 
 async function composeFromWebGuidedDraft(draft, evidencePack) {
