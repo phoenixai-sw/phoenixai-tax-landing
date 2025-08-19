@@ -1,6 +1,30 @@
 const axios = require('axios');
 const searchPolicy = require('../../config/search-policy.json');
 
+// 베이스 URL 안정화 함수
+function getInternalBase() {
+  if (process.env.NETLIFY_DEV === 'true' && process.env.PORT) {
+    return `http://localhost:${process.env.PORT}`;
+  }
+  return process.env.URL || '';
+}
+
+// 내부 함수 호출용 헬퍼 함수
+async function callInternalFunction(functionName, data) {
+  const base = getInternalBase();
+  const response = await fetch(`${base}/.netlify/functions/${functionName}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+    body: JSON.stringify(data)
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Internal function call failed: ${response.status}`);
+  }
+  
+  return await response.json();
+}
+
 exports.handler = async (event, context) => {
   // CORS 헤더 설정
   const headers = {
