@@ -59,7 +59,7 @@ async function callOpenAI({ prompt, model = 'gpt-4o', temperature = 0.2, maxOutp
     method: "POST",
     headers: {
       "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
-      "Content-Type": "application/json"
+      "Content-Type": "application/json; charset=utf-8"
     },
     body: JSON.stringify(payload),
   });
@@ -95,6 +95,7 @@ async function callOpenAI({ prompt, model = 'gpt-4o', temperature = 0.2, maxOutp
 exports.handler = async (event, context) => {
   // CORS 헤더 설정
   const headers = {
+    'Content-Type': 'application/json; charset=utf-8',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
