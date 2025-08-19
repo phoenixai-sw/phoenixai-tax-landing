@@ -18,8 +18,22 @@
   status = 200
 
 [functions]
+  directory = "netlify/functions"
   node_bundler = "esbuild"
   external_node_modules = ["@supabase/supabase-js"]
+
+# Function별 타임아웃 설정
+[functions."answer-assemble"]
+  timeout = 60
+
+[functions."verify-conflict"]
+  timeout = 60
+
+[functions."build-evidence-pack"]
+  timeout = 60
+
+[functions."search"]
+  timeout = 60
 
 [[headers]]
   for = "/api/*"
