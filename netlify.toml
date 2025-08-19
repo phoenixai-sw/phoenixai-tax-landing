@@ -24,16 +24,16 @@
 
 # Function별 타임아웃 설정
 [functions."answer-assemble"]
-  timeout = 60
+  timeout = 120
 
 [functions."verify-conflict"]
-  timeout = 60
+  timeout = 120
 
 [functions."build-evidence-pack"]
-  timeout = 60
+  timeout = 120
 
 [functions."search"]
-  timeout = 60
+  timeout = 120
 
 [[headers]]
   for = "/api/*"

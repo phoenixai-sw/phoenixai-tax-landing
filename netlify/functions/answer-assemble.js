@@ -62,19 +62,30 @@ async function callOpenAI({ prompt, model = process.env.OPENAI_MODEL || 'gpt-5',
   let outputText;
   
   if (data.output && Array.isArray(data.output)) {
-    // output 배열에서 텍스트 찾기
-    const textOutput = data.output.find(x => x.type === "text");
-    if (textOutput) {
-      outputText = textOutput.text;
+    // 1. message 타입에서 output_text 찾기
+    const messageOutput = data.output.find(x => x.type === "message");
+    if (messageOutput && messageOutput.content) {
+      const textContent = messageOutput.content.find(c => c.type === "output_text");
+      if (textContent) {
+        outputText = textContent.text;
+      }
+    }
+    
+    // 2. text 타입 직접 찾기
+    if (!outputText) {
+      const textOutput = data.output.find(x => x.type === "text");
+      if (textOutput) {
+        outputText = textOutput.text;
+      }
     }
   }
   
-  // fallback: output_text 필드 확인
+  // 3. fallback: output_text 필드 확인
   if (!outputText && data.output_text) {
     outputText = data.output_text;
   }
   
-  // fallback: 전체 응답을 텍스트로 처리
+  // 4. fallback: 전체 응답을 텍스트로 처리
   if (!outputText) {
     console.warn('Unexpected OpenAI response format:', JSON.stringify(data, null, 2));
     outputText = JSON.stringify(data);
