@@ -1,6 +1,52 @@
 const axios = require('axios');
 const searchPolicy = require('../../config/search-policy.json');
 
+// --- OpenAI Responses API 헬퍼 ---
+async function callOpenAI({ prompt, model = process.env.OPENAI_MODEL || 'gpt-5', temperature = 0.2, maxOutputTokens = 900 }) {
+  const payload = {
+    model,
+    input: prompt,                 // ✅ Responses API는 input 사용
+    temperature,
+    max_output_tokens: maxOutputTokens, // ✅ max_output_tokens 사용 (chat의 max_tokens 아님)
+  };
+
+  const res = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const text = await res.text();
+  if (!res.ok) {
+    // 400 본문을 그대로 에러에 붙여 원인 파악이 쉬움
+    throw new Error(`OpenAI ${res.status}: ${text.slice(0, 800)}`);
+  }
+
+  let data;
+  try { data = JSON.parse(text); } catch {
+    throw new Error(`OpenAI response JSON parse failed: ${text.slice(0, 200)}`);
+  }
+
+  // 다양한 포맷 방어적으로 파싱
+  const outputText =
+    data.output_text ??
+    (Array.isArray(data.output)
+      ? data.output
+          .find(x => x.type === "message")?.content?.find(c => c.type === "output_text")?.text
+        ?? data.output.find(x => x.type === "message")?.content?.[0]?.text
+        ?? data.output.find(x => x.type === "output_text")?.text
+      : undefined);
+
+  if (!outputText) {
+    throw new Error(`OpenAI response missing output_text: ${text.slice(0, 200)}`);
+  }
+
+  return { raw: data, text: outputText };
+}
+
 exports.handler = async (event, context) => {
   // CORS 헤더 설정
   const headers = {
@@ -73,7 +119,6 @@ exports.handler = async (event, context) => {
 
 async function performNLIAnalysis(draftA, draftB, evidencePack) {
   const openaiApiKey = process.env.OPENAI_API_KEY;
-  const model = process.env.OPENAI_MODEL || 'gpt-5';
   
   if (!openaiApiKey) {
     throw new Error('OpenAI API key not configured');
@@ -82,34 +127,34 @@ async function performNLIAnalysis(draftA, draftB, evidencePack) {
   const nliPrompt = createNLIPrompt(draftA, draftB, evidencePack);
   
   try {
-    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-      model,
-      messages: [
-        { 
-          role: 'system', 
-          content: '당신은 엄격한 NLI(자연어 추론) 판정자입니다. JSON 형식으로만 응답하세요.' 
-        },
-        { role: 'user', content: nliPrompt }
-      ],
+    const result = await callOpenAI({
+      prompt: `당신은 엄격한 NLI(자연어 추론) 판정자입니다. JSON 형식으로만 응답하세요.\n\n${nliPrompt}`,
       temperature: 0.0,
-      max_tokens: 800,
-      response_format: { type: "json_object" }
-    }, {
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      timeout: 20000
+      maxOutputTokens: 800
     });
 
-    const result = JSON.parse(response.data.choices[0].message.content);
+    // JSON 파싱 시도
+    let parsedResult;
+    try {
+      parsedResult = JSON.parse(result.text);
+    } catch (parseError) {
+      console.error('NLI JSON parsing failed:', parseError);
+      // JSON 파싱 실패 시 기본값 반환
+      parsedResult = {
+        conflict_score: 0,
+        conflicts: [],
+        decisive_web_sources: [],
+        reasoning: 'JSON 파싱 실패',
+        confidence: 0
+      };
+    }
     
     return {
-      conflict_score: result.conflict_score || 0,
-      conflicts: result.conflicts || [],
-      decisive_web_sources: result.decisive_web_sources || [],
-      reasoning: result.reasoning || '',
-      confidence: result.confidence || 0.5
+      conflict_score: parsedResult.conflict_score || 0,
+      conflicts: parsedResult.conflicts || [],
+      decisive_web_sources: parsedResult.decisive_web_sources || [],
+      reasoning: parsedResult.reasoning || '',
+      confidence: parsedResult.confidence || 0.5
     };
 
   } catch (error) {
