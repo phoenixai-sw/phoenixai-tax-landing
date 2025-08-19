@@ -26,19 +26,17 @@ async function callInternalFunction(functionName, data) {
 }
 
 // --- OpenAI Responses API 헬퍼 ---
-async function callOpenAI({ prompt, model = process.env.OPENAI_MODEL || 'gpt-5', temperature = 0.2, maxOutputTokens = 900 }) {
-  const payload = {
-    model,
-    input: prompt,                 // ✅ Responses API는 input 사용
-    max_output_tokens: maxOutputTokens, // ✅ max_output_tokens 사용 (chat의 max_tokens 아님)
-  };
-  
-  // GPT-5 모델에서는 temperature 파라미터 제외
-  if (model !== 'gpt-5') {
-    payload.temperature = temperature;
-  }
+  async function callOpenAI({ prompt, model = process.env.OPENAI_MODEL || 'gpt-4o', temperature = 0.2, maxOutputTokens = 900 }) {
+   const payload = {
+     model,
+     messages: [
+       { role: "user", content: prompt }
+     ],
+     max_tokens: maxOutputTokens,
+     temperature: temperature
+   };
 
-  const res = await fetch("https://api.openai.com/v1/responses", {
+     const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
@@ -58,38 +56,18 @@ async function callOpenAI({ prompt, model = process.env.OPENAI_MODEL || 'gpt-5',
     throw new Error(`OpenAI response JSON parse failed: ${text.slice(0, 200)}`);
   }
 
-  // GPT-5 Responses API 응답 파싱
-  let outputText;
-  
-  if (data.output && Array.isArray(data.output)) {
-    // 1. message 타입에서 output_text 찾기
-    const messageOutput = data.output.find(x => x.type === "message");
-    if (messageOutput && messageOutput.content) {
-      const textContent = messageOutput.content.find(c => c.type === "output_text");
-      if (textContent) {
-        outputText = textContent.text;
-      }
-    }
-    
-    // 2. text 타입 직접 찾기
-    if (!outputText) {
-      const textOutput = data.output.find(x => x.type === "text");
-      if (textOutput) {
-        outputText = textOutput.text;
-      }
-    }
-  }
-  
-  // 3. fallback: output_text 필드 확인
-  if (!outputText && data.output_text) {
-    outputText = data.output_text;
-  }
-  
-  // 4. fallback: 전체 응답을 텍스트로 처리
-  if (!outputText) {
-    console.warn('Unexpected OpenAI response format:', JSON.stringify(data, null, 2));
-    outputText = JSON.stringify(data);
-  }
+     // GPT-4 Chat Completions API 응답 파싱
+   let outputText;
+   
+   if (data.choices && data.choices.length > 0) {
+     outputText = data.choices[0].message.content;
+   }
+   
+   // fallback: 전체 응답을 텍스트로 처리
+   if (!outputText) {
+     console.warn('Unexpected OpenAI response format:', JSON.stringify(data, null, 2));
+     outputText = JSON.stringify(data);
+   }
 
   return { raw: data, text: outputText };
 }
