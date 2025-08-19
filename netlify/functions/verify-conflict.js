@@ -34,18 +34,26 @@ async function callOpenAI({ prompt, model = process.env.OPENAI_MODEL || 'gpt-5',
     throw new Error(`OpenAI response JSON parse failed: ${text.slice(0, 200)}`);
   }
 
-  // 다양한 포맷 방어적으로 파싱
-  const outputText =
-    data.output_text ??
-    (Array.isArray(data.output)
-      ? data.output
-          .find(x => x.type === "message")?.content?.find(c => c.type === "output_text")?.text
-        ?? data.output.find(x => x.type === "message")?.content?.[0]?.text
-        ?? data.output.find(x => x.type === "output_text")?.text
-      : undefined);
-
+  // GPT-5 Responses API 응답 파싱
+  let outputText;
+  
+  if (data.output && Array.isArray(data.output)) {
+    // output 배열에서 텍스트 찾기
+    const textOutput = data.output.find(x => x.type === "text");
+    if (textOutput) {
+      outputText = textOutput.text;
+    }
+  }
+  
+  // fallback: output_text 필드 확인
+  if (!outputText && data.output_text) {
+    outputText = data.output_text;
+  }
+  
+  // fallback: 전체 응답을 텍스트로 처리
   if (!outputText) {
-    throw new Error(`OpenAI response missing output_text: ${text.slice(0, 200)}`);
+    console.warn('Unexpected OpenAI response format:', JSON.stringify(data, null, 2));
+    outputText = JSON.stringify(data);
   }
 
   return { raw: data, text: outputText };
