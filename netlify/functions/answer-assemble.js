@@ -38,13 +38,15 @@ async function callInternalFunction(functionName, data) {
      payload.temperature = temperature;
    }
    
-   // GPT-5에서 text 출력 강제
-   if (model === 'gpt-5') {
-     payload.text = {
-       format: { type: "text" },
-       verbosity: "medium"
-     };
-   }
+       // GPT-5에서 text 출력 강제
+    if (model === 'gpt-5') {
+      payload.text = {
+        format: { type: "text" },
+        verbosity: "medium"
+      };
+      // reasoning 비활성화로 text 출력 강제
+      payload.reasoning = null;
+    }
 
      const res = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
