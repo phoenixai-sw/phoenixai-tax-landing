@@ -30,10 +30,14 @@ async function callOpenAI({ prompt, model = process.env.OPENAI_MODEL || 'gpt-5',
   const payload = {
     model,
     input: prompt,                 // ✅ Responses API는 input 사용
-    temperature,
     max_output_tokens: maxOutputTokens, // ✅ max_output_tokens 사용 (chat의 max_tokens 아님)
     // reasoning: { effort: "medium" }, // 필요 시
   };
+  
+  // GPT-5 모델에서는 temperature 파라미터 제외
+  if (model !== 'gpt-5') {
+    payload.temperature = temperature;
+  }
 
   const res = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
