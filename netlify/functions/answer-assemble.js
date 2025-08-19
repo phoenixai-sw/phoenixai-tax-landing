@@ -25,30 +25,37 @@ async function callInternalFunction(functionName, data) {
   return await response.json();
 }
 
-// --- OpenAI Responses API 헬퍼 ---
-  async function callOpenAI({ prompt, model = process.env.OPENAI_MODEL || 'gpt-5', temperature = 0.2, maxOutputTokens = 900 }) {
-   const payload = {
-     model,
-     input: prompt,
-     max_output_tokens: maxOutputTokens,
-   };
-   
-   // GPT-5 모델에서는 temperature 파라미터 제외
-   if (model !== 'gpt-5') {
-     payload.temperature = temperature;
-   }
-   
-       // GPT-5에서 text 출력 강제
-    if (model === 'gpt-5') {
-      payload.text = {
-        format: { type: "text" },
-        verbosity: "medium"
-      };
-      // reasoning 비활성화로 text 출력 강제
-      payload.reasoning = null;
-    }
+// --- OpenAI Chat Completions API 헬퍼 ---
+async function callOpenAI({ prompt, model = process.env.OPENAI_MODEL || 'gpt-5', temperature = 0.2, maxOutputTokens = 900 }) {
+  const payload = {
+    model,
+    messages: [
+      {
+        role: "system",
+        content: `당신은 한국의 양도소득세 전문가입니다.
 
-     const res = await fetch("https://api.openai.com/v1/responses", {
+답변 형식을 반드시 지켜주세요:
+📋 **핵심 답변**: (질문에 대한 명확한 2-3문장 답변)
+📊 **적용 세율**: (해당하는 세율 정보와 계산 방법)
+📚 **관련 법령**: (소득세법 제○○조 등 구체적 조항)
+⚠️ **주의사항**: (개별 상황에 따라 달라질 수 있는 부분)
+
+규칙:
+- 확실하지 않은 정보는 "세무사 확인 필요"로 표시
+- 1세대1주택은 거주요건(2년) + 보유요건(2년) 강조
+- 다주택자는 중과세 적용 설명
+- 조정대상지역은 추가 중과 가능성 언급`
+      },
+      {
+        role: "user",
+        content: prompt
+      }
+    ],
+    max_tokens: maxOutputTokens,
+    temperature: temperature
+  };
+
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
@@ -59,47 +66,28 @@ async function callInternalFunction(functionName, data) {
 
   const text = await res.text();
   if (!res.ok) {
-    // 400 본문을 그대로 에러에 붙여 원인 파악이 쉬움
     throw new Error(`OpenAI ${res.status}: ${text.slice(0, 800)}`);
   }
 
   let data;
-  try { data = JSON.parse(text); } catch {
+  try { 
+    data = JSON.parse(text); 
+  } catch {
     throw new Error(`OpenAI response JSON parse failed: ${text.slice(0, 200)}`);
   }
 
-     // GPT-5 Responses API 응답 파싱
-   let outputText;
-   
-   if (data.output && Array.isArray(data.output)) {
-     // 1. message 타입에서 output_text 찾기
-     const messageOutput = data.output.find(x => x.type === "message");
-     if (messageOutput && messageOutput.content) {
-       const textContent = messageOutput.content.find(c => c.type === "output_text");
-       if (textContent) {
-         outputText = textContent.text;
-       }
-     }
-     
-     // 2. text 타입 직접 찾기
-     if (!outputText) {
-       const textOutput = data.output.find(x => x.type === "text");
-       if (textOutput) {
-         outputText = textOutput.text;
-       }
-     }
-   }
-   
-   // 3. fallback: output_text 필드 확인
-   if (!outputText && data.output_text) {
-     outputText = data.output_text;
-   }
-   
-   // 4. fallback: 전체 응답을 텍스트로 처리
-   if (!outputText) {
-     console.warn('Unexpected OpenAI response format:', JSON.stringify(data, null, 2));
-     outputText = JSON.stringify(data);
-   }
+  // Chat Completions API 응답 파싱
+  let outputText;
+  
+  if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+    outputText = data.choices[0].message.content;
+  }
+  
+  // fallback: 전체 응답을 텍스트로 처리
+  if (!outputText) {
+    console.warn('Unexpected OpenAI response format:', JSON.stringify(data, null, 2));
+    outputText = JSON.stringify(data);
+  }
 
   return { raw: data, text: outputText };
 }
