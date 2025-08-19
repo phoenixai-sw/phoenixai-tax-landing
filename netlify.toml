@@ -4,7 +4,7 @@
   functions = "netlify/functions"
 
 [build.environment]
-  NODE_VERSION = "20"
+  NODE_VERSION = "18"
   NPM_VERSION = "10"
 
 [[redirects]]
@@ -41,3 +41,10 @@
     Access-Control-Allow-Origin = "*"
     Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type, Authorization"
+
+[dev]
+  command = "npm run dev"
+  port = 8888
+  publish = ".next"
+  functions = "netlify/functions"
+  targetPort = 3000
