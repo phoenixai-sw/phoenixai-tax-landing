@@ -51,7 +51,7 @@ async function callOpenAI({ prompt, model = process.env.OPENAI_MODEL || 'gpt-5',
         content: prompt
       }
     ],
-    max_tokens: maxOutputTokens,
+         max_completion_tokens: maxOutputTokens,
     temperature: temperature
   };
 
