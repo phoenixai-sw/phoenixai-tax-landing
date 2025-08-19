@@ -26,7 +26,7 @@ async function callInternalFunction(functionName, data) {
 }
 
 // --- OpenAI Chat Completions API 헬퍼 ---
-async function callOpenAI({ prompt, model = process.env.OPENAI_MODEL || 'gpt-5', temperature = 0.2, maxOutputTokens = 900 }) {
+async function callOpenAI({ prompt, model = 'gpt-4o', temperature = 0.2, maxOutputTokens = 900 }) {
   const payload = {
     model,
     messages: [
@@ -51,7 +51,7 @@ async function callOpenAI({ prompt, model = process.env.OPENAI_MODEL || 'gpt-5',
         content: prompt
       }
     ],
-         max_completion_tokens: maxOutputTokens,
+         max_tokens: maxOutputTokens,
     temperature: temperature
   };
 
@@ -198,21 +198,21 @@ async function generateDualPass(query, evidencePack) {
 
          // ✅ Responses API로 교체 (병렬 처리로 최적화)
      const [draftAResult, draftBResult] = await Promise.all([
-       callOpenAI({
-         prompt: buildUserPrompt(query, ctx),           // 컨텍스트 포함 버전
-         temperature: 0.1,                              // 낮은 temperature로 빠른 응답
-         maxOutputTokens: 600                           // 토큰 수 감소
-       }),
-       callOpenAI({
-         prompt: `SYSTEM:\n${SYSTEM_PROMPT}\n\nUSER:\n${query}`,   // 컨텍스트 미포함 버전
-         temperature: 0.1,                              // 낮은 temperature로 빠른 응답
-         maxOutputTokens: 600                           // 토큰 수 감소
-       })
+               callOpenAI({
+          prompt: buildUserPrompt(query, ctx),           // 컨텍스트 포함 버전
+          temperature: 0.1,                              // GPT-4o는 낮은 temperature 지원
+          maxOutputTokens: 600                           // 토큰 수 감소
+        }),
+        callOpenAI({
+          prompt: `SYSTEM:\n${SYSTEM_PROMPT}\n\nUSER:\n${query}`,   // 컨텍스트 미포함 버전
+          temperature: 0.1,                              // GPT-4o는 낮은 temperature 지원
+          maxOutputTokens: 600                           // 토큰 수 감소
+        })
      ]);
 
     return { 
-      draftA: { content: draftAResult.text, tokens: 0, model: process.env.OPENAI_MODEL || 'gpt-5' },
-      draftB: { content: draftBResult.text, tokens: 0, model: process.env.OPENAI_MODEL || 'gpt-5' }
+             draftA: { content: draftAResult.text, tokens: 0, model: process.env.OPENAI_MODEL || 'gpt-4o' },
+       draftB: { content: draftBResult.text, tokens: 0, model: process.env.OPENAI_MODEL || 'gpt-4o' }
     };
   } catch (error) {
     console.error('Dual-pass generation failed:', error);
@@ -370,11 +370,11 @@ async function composeFromWeb(evidencePack) {
     `[${evidence.domain}] ${evidence.title}\n${evidence.snippet}`
   ).join('\n\n') || '';
 
-     const result = await callOpenAI({
-     prompt: `${createTaxSystemPrompt()}\n\n다음 웹 증거만을 사용하여 구조화된 답변을 작성하세요:\n\n${webContent}`,
-     temperature: 0.1,
-     maxOutputTokens: 600                           // 웹 구성도 토큰 수 감소
-   });
+           const result = await callOpenAI({
+      prompt: `${createTaxSystemPrompt()}\n\n다음 웹 증거만을 사용하여 구조화된 답변을 작성하세요:\n\n${webContent}`,
+      temperature: 0.1,
+      maxOutputTokens: 600                           // 웹 구성도 토큰 수 감소
+    });
 
   return result.text;
 }
