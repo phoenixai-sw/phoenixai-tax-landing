@@ -150,11 +150,11 @@ async function performNLIAnalysis(draftA, draftB, evidencePack) {
   const nliPrompt = createNLIPrompt(draftA, draftB, evidencePack);
   
   try {
-    const result = await callOpenAI({
-      prompt: `당신은 엄격한 NLI(자연어 추론) 판정자입니다. JSON 형식으로만 응답하세요.\n\n${nliPrompt}`,
-      temperature: 0.0,
-      maxOutputTokens: 800
-    });
+         const result = await callOpenAI({
+       prompt: `당신은 엄격한 NLI(자연어 추론) 판정자입니다. JSON 형식으로만 응답하세요.\n\n${nliPrompt}`,
+       temperature: 0.0,
+       maxOutputTokens: 400                           // NLI 토큰 수 감소
+     });
 
     // JSON 파싱 시도
     let parsedResult;

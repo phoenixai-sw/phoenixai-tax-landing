@@ -198,18 +198,19 @@ async function generateDualPass(query, evidencePack) {
 
     const ctx = evidencePack?.evidence || []; // RAG 미사용이면 빈배열로
 
-    // ✅ Responses API로 교체
-    const draftAResult = await callOpenAI({
-      prompt: buildUserPrompt(query, ctx),           // 컨텍스트 포함 버전
-      temperature: 0.2,
-      maxOutputTokens: 900
-    });
-
-    const draftBResult = await callOpenAI({
-      prompt: `SYSTEM:\n${SYSTEM_PROMPT}\n\nUSER:\n${query}`,   // 컨텍스트 미포함 버전
-      temperature: 0.2,
-      maxOutputTokens: 900
-    });
+         // ✅ Responses API로 교체 (병렬 처리로 최적화)
+     const [draftAResult, draftBResult] = await Promise.all([
+       callOpenAI({
+         prompt: buildUserPrompt(query, ctx),           // 컨텍스트 포함 버전
+         temperature: 0.1,                              // 낮은 temperature로 빠른 응답
+         maxOutputTokens: 600                           // 토큰 수 감소
+       }),
+       callOpenAI({
+         prompt: `SYSTEM:\n${SYSTEM_PROMPT}\n\nUSER:\n${query}`,   // 컨텍스트 미포함 버전
+         temperature: 0.1,                              // 낮은 temperature로 빠른 응답
+         maxOutputTokens: 600                           // 토큰 수 감소
+       })
+     ]);
 
     return { 
       draftA: { content: draftAResult.text, tokens: 0, model: process.env.OPENAI_MODEL || 'gpt-5' },
@@ -271,11 +272,11 @@ async function verifyConflict(draftA, draftB, evidencePack) {
   const nliPrompt = createNLIPrompt(draftA.content, draftB.content, evidencePack);
   
   try {
-    const result = await callOpenAI({
-      prompt: nliPrompt,
-      temperature: 0.0,
-      maxOutputTokens: 500
-    });
+         const result = await callOpenAI({
+       prompt: nliPrompt,
+       temperature: 0.0,
+       maxOutputTokens: 300                           // NLI는 짧은 응답으로 충분
+     });
 
     // JSON 파싱 시도
     let parsedResult;
@@ -371,11 +372,11 @@ async function composeFromWeb(evidencePack) {
     `[${evidence.domain}] ${evidence.title}\n${evidence.snippet}`
   ).join('\n\n') || '';
 
-  const result = await callOpenAI({
-    prompt: `${createTaxSystemPrompt()}\n\n다음 웹 증거만을 사용하여 구조화된 답변을 작성하세요:\n\n${webContent}`,
-    temperature: 0.1,
-    maxOutputTokens: 900
-  });
+     const result = await callOpenAI({
+     prompt: `${createTaxSystemPrompt()}\n\n다음 웹 증거만을 사용하여 구조화된 답변을 작성하세요:\n\n${webContent}`,
+     temperature: 0.1,
+     maxOutputTokens: 600                           // 웹 구성도 토큰 수 감소
+   });
 
   return result.text;
 }
