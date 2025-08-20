@@ -82,23 +82,73 @@ function findBestModelAnswer(query) {
   return { match: bestMatch, score: bestScore };
 }
 
-// Google Search 함수
+// Google Search 함수 (화이트리스트 우선)
 async function performGoogleSearch(query) {
   try {
-    const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${process.env.GOOGLE_API_KEY}&cx=${process.env.SEARCH_ENGINE_ID}&q=${encodeURIComponent(query + ' 양도소득세 2025')}&num=3`;
+    // 화이트리스트 도메인들
+    const whiteListDomains = [
+      'law.go.kr',    // 국가법령정보센터
+      'nts.go.kr',    // 국세청
+      'molit.go.kr',  // 국토교통부
+      'scourt.go.kr'  // 대법원
+    ];
     
-    const response = await fetch(searchUrl);
-    const data = await response.json();
+    let allResults = [];
     
-    if (data.items && data.items.length > 0) {
-      return data.items.map(item => ({
-        title: item.title,
-        snippet: item.snippet,
-        link: item.link
-      }));
+    // 1단계: 화이트리스트 도메인 우선 검색
+    for (const domain of whiteListDomains) {
+      try {
+        const whiteListUrl = `https://www.googleapis.com/customsearch/v1?key=${process.env.GOOGLE_API_KEY}&cx=${process.env.SEARCH_ENGINE_ID}&q=${encodeURIComponent(query + ' 양도소득세 2025')}&siteSearch=${domain}&num=2`;
+        
+        const response = await fetch(whiteListUrl);
+        const data = await response.json();
+        
+        if (data.items && data.items.length > 0) {
+          console.log(`✅ 화이트리스트 검색 성공: ${domain}`);
+          allResults.push(...data.items.map(item => ({
+            title: item.title,
+            snippet: item.snippet,
+            link: item.link,
+            source: 'official' // 공식 출처 표시
+          })));
+        }
+      } catch (error) {
+        console.log(`❌ 화이트리스트 검색 실패: ${domain}`, error.message);
+      }
     }
     
-    return [];
+    // 2단계: 일반 검색 (화이트리스트 결과가 부족한 경우)
+    if (allResults.length < 3) {
+      try {
+        const generalUrl = `https://www.googleapis.com/customsearch/v1?key=${process.env.GOOGLE_API_KEY}&cx=${process.env.SEARCH_ENGINE_ID}&q=${encodeURIComponent(query + ' 양도소득세 2025')}&num=${3 - allResults.length}`;
+        
+        const response = await fetch(generalUrl);
+        const data = await response.json();
+        
+        if (data.items && data.items.length > 0) {
+          console.log(`✅ 일반 검색 성공: ${data.items.length}개 결과`);
+          allResults.push(...data.items.map(item => ({
+            title: item.title,
+            snippet: item.snippet,
+            link: item.link,
+            source: 'general'
+          })));
+        }
+      } catch (error) {
+        console.log(`❌ 일반 검색 실패:`, error.message);
+      }
+    }
+    
+    // 결과 정렬 (공식 출처 우선)
+    allResults.sort((a, b) => {
+      if (a.source === 'official' && b.source !== 'official') return -1;
+      if (a.source !== 'official' && b.source === 'official') return 1;
+      return 0;
+    });
+    
+    console.log(`📊 총 검색 결과: ${allResults.length}개 (공식: ${allResults.filter(r => r.source === 'official').length}개)`);
+    
+    return allResults.slice(0, 3); // 최대 3개 반환
   } catch (error) {
     console.error('Google Search error:', error);
     return [];
