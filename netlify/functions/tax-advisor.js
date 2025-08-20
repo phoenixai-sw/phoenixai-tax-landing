@@ -220,37 +220,66 @@ ${context}
   }
 }
 
-// GPT-4o 답변 생성 함수
+// GPT-4o 답변 생성 함수 (개선된 버전)
 async function generateAnswerWithGPT4o(query) {
   try {
+    // 질문 분석을 위한 키워드 추출
+    const keywords = extractKeywords(query);
+    
     const prompt = `당신은 한국의 양도소득세 전문가입니다. 
 
 🚨 **중요한 규칙 - 반드시 지켜주세요:**
 - "죄송합니다", "질문이 명확하지 않습니다", "질문이 명확하지 않지만" 등의 표현을 절대 사용하지 마세요
 - 모든 질문에 대해 즉시 직접적으로 답변을 시작하세요
 - 보수적이거나 사과하는 문구 없이 바로 핵심 내용을 설명하세요
-- 구체적인 법조항, 날짜, 요건을 포함하여 답변하세요
+- 질문의 구체적인 내용에 맞춰 정확한 답변을 제공하세요
 
 사용자 질문: ${query}
 
-위 질문에 대해 정확하고 실용적인 답변을 제공해주세요.
+질문 분석 결과:
+- 주요 키워드: ${keywords.join(', ')}
+- 질문 유형: ${analyzeQuestionType(query)}
+- 생성된 제목: ${generateSpecificTitle(query)}
 
-답변 형식:
-1. 개요
-2. 보유/거주·세율표
-3. 유의사항
-4. 법령·근거
-5. 결론
+위 질문에 대해 다음 형식으로 구체적이고 정확한 답변을 제공해주세요.
 
-세무 규칙:
+📋 **답변 형식 (반드시 지켜주세요):**
+
+**${generateSpecificTitle(query)}**
+---
+
+### ■ 기본 원칙
+- 핵심 내용을 명확하게 설명
+- 법조항과 근거 명시
+
+### ■ 구체적 요건 및 조건
+- 단계별로 구체적인 요건 설명
+- 표나 예시 활용 가능
+
+### ■ 예외 사항 (해당하는 경우)
+- 예외 상황이나 특별한 경우 설명
+
+### ■ 참고 사항
+- 추가 확인이 필요한 내용
+
+### ✅ 결론
+- 명확한 결론과 실무적 조언
+
+🚨 **중요: 위 제목 "${generateSpecificTitle(query)}"을 반드시 그대로 사용하세요!**
+
+📚 **세무 규칙 (참고용):**
 - 1세대1주택 비과세: 거주요건 2년 + 보유요건 2년
-- 다주택자: 중과세 적용
+- 다주택자: 중과세 적용 (2주택 20%p, 3주택 이상 30%p)
 - 조정대상지역: 추가 중과 가능성
-- 확실하지 않은 정보는 "세무사 확인 필요"로 표시
+- 분양권: 2021.1.1 이후 취득 시 주택수 포함
+- 부동산매매업자: 신고 의무 있음
+- 상속농지: 8년 이상 자경 시 감면 가능
+- 일시적 2주택: 특별 요건 확인
+- 조정대상지역: 서울 4개구 등
 
 답변 시작 예시:
 ❌ "죄송합니다. 질문이 명확하지 않지만..."
-✅ "1세대1주택 비과세는 다음과 같습니다..."`;
+✅ "**${generateSpecificTitle(query)}**"`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
@@ -260,21 +289,108 @@ async function generateAnswerWithGPT4o(query) {
           content: prompt
         }
       ],
-      max_tokens: 800,
+      max_tokens: 1500,
       temperature: 0.1
     });
 
-    return completion.choices[0].message.content;
+    let answer = completion.choices[0].message.content;
+    
+    // 제목을 강제로 교체
+    const specificTitle = generateSpecificTitle(query);
+    console.log(`🔧 제목 교체 시도: "${specificTitle}"`);
+    
+    if (answer.includes('**양도소득세 관련 질문에 대한 답변**')) {
+      answer = answer.replace('**양도소득세 관련 질문에 대한 답변**', `**${specificTitle}**`);
+      console.log('✅ 기본 제목 교체 완료');
+    } else if (answer.includes('**양도소득세의 기본 개념과 적용**')) {
+      answer = answer.replace('**양도소득세의 기본 개념과 적용**', `**${specificTitle}**`);
+      console.log('✅ 기본 제목 교체 완료');
+    } else if (answer.startsWith('**')) {
+      // 다른 제목이 있는 경우 첫 번째 제목을 교체
+      const titleEndIndex = answer.indexOf('**', 2);
+      if (titleEndIndex !== -1) {
+        answer = `**${specificTitle}**` + answer.substring(titleEndIndex + 2);
+        console.log('✅ 첫 번째 제목 교체 완료');
+      }
+    }
+
+    return answer;
   } catch (error) {
     console.error('GPT-4o 답변 생성 오류:', error);
     return null;
   }
 }
 
-// 답변 검증 함수
+// 키워드 추출 함수
+function extractKeywords(query) {
+  const keywords = [];
+  
+  if (query.includes('분양권')) keywords.push('분양권');
+  if (query.includes('부동산매매업자')) keywords.push('부동산매매업자');
+  if (query.includes('상속') && query.includes('농지')) keywords.push('상속농지');
+  if (query.includes('일시적') && query.includes('2주택')) keywords.push('일시적2주택');
+  if (query.includes('조정') || query.includes('지역')) keywords.push('조정대상지역');
+  if (query.includes('1세대') && query.includes('1주택')) keywords.push('1세대1주택');
+  if (query.includes('비과세')) keywords.push('비과세');
+  if (query.includes('신고')) keywords.push('신고');
+  if (query.includes('감면')) keywords.push('감면');
+  
+  return keywords;
+}
+
+// 질문 유형 분석 함수
+function analyzeQuestionType(query) {
+  if (query.includes('분양권')) return '분양권 포함 여부';
+  if (query.includes('부동산매매업자')) return '부동산매매업자 신고 의무';
+  if (query.includes('상속') && query.includes('농지')) return '상속농지 감면';
+  if (query.includes('일시적') && query.includes('2주택')) return '일시적 2주택 비과세';
+  if (query.includes('조정') || query.includes('지역')) return '조정대상지역';
+  if (query.includes('1세대') && query.includes('1주택')) return '1세대1주택 비과세';
+  
+  return '일반 양도소득세';
+}
+
+// 구체적 제목 생성 함수
+function generateSpecificTitle(query) {
+  console.log(`🔍 제목 생성 함수 호출: "${query}"`);
+  
+  if (query.includes('분양권') && query.includes('주택수')) {
+    console.log('✅ 분양권 주택수 제목 생성');
+    return '1세대 1주택 판단 시 분양권의 주택 수 포함 여부';
+  }
+  if (query.includes('부동산매매업자') && query.includes('신고')) {
+    console.log('✅ 부동산매매업자 신고 제목 생성');
+    return '부동산매매업자의 양도소득세 신고 의무';
+  }
+  if (query.includes('상속') && query.includes('농지') && query.includes('감면')) {
+    console.log('✅ 상속농지 감면 제목 생성');
+    return '상속받은 농지 양도 시 양도소득세 감면 가능 여부';
+  }
+  if (query.includes('일시적') && query.includes('2주택') && query.includes('비과세')) {
+    console.log('✅ 일시적 2주택 제목 생성');
+    return '일시적 2주택 비과세 요건';
+  }
+  if (query.includes('조정') || query.includes('지역')) {
+    console.log('✅ 조정대상지역 제목 생성');
+    return '양도소득세 조정대상지역 현황';
+  }
+  if (query.includes('1세대') && query.includes('1주택') && query.includes('2년')) {
+    console.log('✅ 1세대 1주택 2년 제목 생성');
+    return '1세대 1주택 비과세를 위한 2년 거주 요건의 필수 여부';
+  }
+  if (query.includes('1세대') && query.includes('1주택') && query.includes('비과세')) {
+    console.log('✅ 1세대 1주택 비과세 제목 생성');
+    return '1세대 1주택 양도소득세 비과세 요건';
+  }
+  
+  console.log('❌ 기본 제목 사용');
+  return '양도소득세 관련 질문에 대한 답변';
+}
+
+// 답변 검증 및 개선 함수 (강화된 버전)
 async function verifyAnswerWithSearch(query, generatedAnswer) {
   try {
-    console.log('🔍 답변 검증 시작...');
+    console.log('🔍 답변 검증 및 개선 시작...');
     
     // 화이트리스트 도메인들
     const whiteListDomains = [
@@ -285,33 +401,127 @@ async function verifyAnswerWithSearch(query, generatedAnswer) {
     ];
     
     let verificationResults = [];
+    let searchContext = '';
     
-    // 각 공식 출처에서 검증
+    // 각 공식 출처에서 검증 및 정보 수집
     for (const domain of whiteListDomains) {
       try {
-        const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${process.env.GOOGLE_API_KEY}&cx=${process.env.SEARCH_ENGINE_ID}&q=${encodeURIComponent(query + ' 양도소득세 2025')}&siteSearch=${domain}&num=1`;
+        const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${process.env.GOOGLE_API_KEY}&cx=${process.env.SEARCH_ENGINE_ID}&q=${encodeURIComponent(query + ' 양도소득세 2025')}&siteSearch=${domain}&num=2`;
         
         const response = await fetch(searchUrl);
         const data = await response.json();
         
         if (data.items && data.items.length > 0) {
           console.log(`✅ ${domain} 검증 결과 확인`);
+          
+          // 검증 결과 저장
           verificationResults.push({
             source: domain,
             title: data.items[0].title,
             snippet: data.items[0].snippet,
             link: data.items[0].link
           });
+          
+          // 검색 컨텍스트에 추가
+          searchContext += `[${domain}] ${data.items[0].title}\n${data.items[0].snippet}\n\n`;
+          
+          // 추가 정보가 있으면 포함
+          if (data.items[1]) {
+            searchContext += `[${domain} 추가] ${data.items[1].title}\n${data.items[1].snippet}\n\n`;
+          }
         }
       } catch (error) {
         console.log(`❌ ${domain} 검증 실패:`, error.message);
       }
     }
     
-    return verificationResults;
+    // 검증된 정보를 바탕으로 답변 개선
+    if (searchContext && verificationResults.length > 0) {
+      console.log('📝 검증 정보를 바탕으로 답변 개선 중...');
+      const improvedAnswer = await improveAnswerWithVerification(query, generatedAnswer, searchContext);
+      return {
+        verificationResults: verificationResults,
+        improvedAnswer: improvedAnswer,
+        searchContext: searchContext
+      };
+    }
+    
+    return {
+      verificationResults: verificationResults,
+      improvedAnswer: generatedAnswer,
+      searchContext: ''
+    };
   } catch (error) {
     console.error('답변 검증 오류:', error);
-    return [];
+    return {
+      verificationResults: [],
+      improvedAnswer: generatedAnswer,
+      searchContext: ''
+    };
+  }
+}
+
+// 검증 정보를 바탕으로 답변 개선 함수
+async function improveAnswerWithVerification(query, originalAnswer, searchContext) {
+  try {
+         const prompt = `당신은 한국의 양도소득세 전문가입니다.
+
+사용자 질문: ${query}
+
+기존 답변:
+${originalAnswer}
+
+공식 출처 검증 정보:
+${searchContext}
+
+위 검증 정보를 바탕으로 기존 답변을 개선해주세요.
+
+📋 **개선 규칙:**
+1. 기존 답변의 정확성을 검증 정보로 확인
+2. 검증 정보에서 추가된 구체적 내용이 있으면 포함
+3. 검증 정보와 모순되는 내용이 있으면 수정
+4. 더 구체적이고 정확한 정보로 보완
+5. 공식 출처의 최신 정보를 반영
+6. 다음 형식을 유지하여 개선:
+
+**${generateSpecificTitle(query)}**
+---
+
+### ■ 기본 원칙
+- 핵심 내용을 명확하게 설명
+- 법조항과 근거 명시
+
+### ■ 구체적 요건 및 조건
+- 단계별로 구체적인 요건 설명
+- 표나 예시 활용 가능
+
+### ■ 예외 사항 (해당하는 경우)
+- 예외 상황이나 특별한 경우 설명
+
+### ■ 참고 사항
+- 추가 확인이 필요한 내용
+
+### ✅ 결론
+- 명확한 결론과 실무적 조언
+
+개선된 답변을 제공해주세요.`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'system',
+          content: prompt
+        }
+      ],
+      max_tokens: 1500,
+      temperature: 0.1
+    });
+
+    return completion.choices[0].message.content;
+  } catch (error) {
+    console.error('답변 개선 오류:', error);
+    return originalAnswer;
   }
 }
 
@@ -355,18 +565,18 @@ exports.handler = async (event) => {
       };
     }
 
-    // Phase 2: 검색을 통한 답변 검증
-    console.log('🔍 Phase 2: 답변 검증 중...');
-    const verificationResults = await verifyAnswerWithSearch(query, generatedAnswer);
+    // Phase 2: 검색을 통한 답변 검증 및 개선
+    console.log('🔍 Phase 2: 답변 검증 및 개선 중...');
+    const verificationData = await verifyAnswerWithSearch(query, generatedAnswer);
     
-    // Phase 3: 검증 결과를 반영한 최종 답변
+    // Phase 3: 최종 답변 생성
     console.log('📝 Phase 3: 최종 답변 생성 중...');
-    let finalAnswer = generatedAnswer;
+    let finalAnswer = verificationData.improvedAnswer || generatedAnswer;
     
-    if (verificationResults.length > 0) {
+    if (verificationData.verificationResults.length > 0) {
       // 검증 결과가 있으면 답변에 추가
       finalAnswer += '\n\n📚 **공식 출처 검증 결과:**\n';
-      verificationResults.forEach((result, index) => {
+      verificationData.verificationResults.forEach((result, index) => {
         finalAnswer += `${index + 1}. ${result.source}: ${result.title}\n`;
       });
       finalAnswer += '\n💡 위 정보는 공식 출처에서 검증되었습니다.';
@@ -379,8 +589,9 @@ exports.handler = async (event) => {
       sessionId: undefined,
       query: query,
       latency: latency,
-      decisionMode: 'gpt4o_verify',
-      verificationSources: verificationResults.length,
+      decisionMode: 'gpt4o_verify_improved',
+      verificationSources: verificationData.verificationResults.length,
+      answerImproved: verificationData.improvedAnswer !== generatedAnswer,
       tokensUsed: 0
     };
 
@@ -392,8 +603,10 @@ exports.handler = async (event) => {
       body: JSON.stringify({
         answer: finalAnswer,
         metrics: metrics,
-        verificationResults: verificationResults,
-        originalAnswer: generatedAnswer
+        verificationResults: verificationData.verificationResults,
+        originalAnswer: generatedAnswer,
+        improvedAnswer: verificationData.improvedAnswer,
+        searchContext: verificationData.searchContext
       })
     };
 
