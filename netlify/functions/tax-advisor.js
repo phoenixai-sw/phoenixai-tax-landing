@@ -16,89 +16,54 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-// 유사도 계산 함수 (정밀한 키워드 매칭)
+// 유사도 계산 함수 (간단하고 효율적인 버전)
 function calculateSimilarity(query, modelAnswer) {
-  // 한글 인코딩 문제 해결을 위한 정규화
+  // 간단한 텍스트 정규화 (한글 보존)
   const normalizeText = (text) => {
-    return text.toLowerCase()
-      .replace(/[^\w\s가-힣]/g, ' ') // 특수문자 제거
-      .replace(/\s+/g, ' ') // 연속 공백을 단일 공백으로
-      .trim();
+    if (!text) return '';
+    return text.toLowerCase().trim();
   };
 
   const normalizedQuery = normalizeText(query);
   const normalizedQuestion = normalizeText(modelAnswer.question);
-  const normalizedAnswer = normalizeText(modelAnswer.answer);
   const keywords = modelAnswer.keywords || [];
+  
+  console.log(`🔍 질문 비교: "${normalizedQuery}" vs "${normalizedQuestion}"`);
   
   let score = 0;
   
-  // 질문 직접 매칭 (가장 높은 가중치)
-  const questionWords = normalizedQuestion.split(/\s+/);
-  const queryWords = normalizedQuery.split(/\s+/);
+  // 질문 직접 매칭 (최고 우선순위)
+  if (normalizedQuery === normalizedQuestion) {
+    score += 20;
+    console.log(`🎯 완전 매칭: +20점`);
+    return score;
+  }
   
-  // 핵심 용어 매칭
-  const coreTerms = ['1세대', '1주택', '비과세', '양도소득세', '중과세', '조정대상지역', '분양권', '상속', '증여'];
-  let coreTermMatches = 0;
-  
-  coreTerms.forEach(term => {
-    const normalizedTerm = normalizeText(term);
-    if (normalizedQuery.includes(normalizedTerm) && 
-        (normalizedQuestion.includes(normalizedTerm) || normalizedAnswer.includes(normalizedTerm))) {
-      coreTermMatches++;
-      score += 3;
-      console.log(`✅ 핵심용어 매칭: ${term} (점수: +3)`);
-    }
-  });
-  
-  // 키워드 매칭 (중간 가중치)
-  let keywordMatches = 0;
+  // 키워드 매칭
   keywords.forEach(keyword => {
-    const normalizedKeyword = normalizeText(keyword);
-    if (normalizedQuery.includes(normalizedKeyword)) {
-      keywordMatches++;
-      score += 2;
-      console.log(`✅ 키워드 매칭: ${keyword} (점수: +2)`);
+    if (normalizedQuery.includes(keyword.toLowerCase())) {
+      score += 4;
+      console.log(`✅ 키워드 매칭: ${keyword} (+4점)`);
     }
   });
   
-  // 질문 단어 매칭 (낮은 가중치)
-  queryWords.forEach(word => {
-    if (word.length > 1 && questionWords.includes(word)) {
-      score += 1;
-      console.log(`✅ 질문 단어 매칭: ${word} (점수: +1)`);
+  // 핵심 단어 매칭
+  const coreTerms = ['1세대', '1주택', '비과세', '양도소득세', '부동산매매업자', '신고', '분양권', '상속', '농지', '감면'];
+  coreTerms.forEach(term => {
+    if (normalizedQuery.includes(term) && normalizedQuestion.includes(term)) {
+      score += 3;
+      console.log(`✅ 핵심단어 매칭: ${term} (+3점)`);
     }
   });
   
   // 카테고리 매칭
-  if (modelAnswer.category) {
-    const normalizedCategory = normalizeText(modelAnswer.category);
-    if (normalizedQuery.includes(normalizedCategory)) {
-      score += 2;
-      console.log(`✅ 카테고리 매칭: ${modelAnswer.category} (점수: +2)`);
-    }
+  if (modelAnswer.category && normalizedQuery.includes(modelAnswer.category)) {
+    score += 2;
+    console.log(`✅ 카테고리 매칭: ${modelAnswer.category} (+2점)`);
   }
   
-  // 부정 매칭 (잘못된 매칭 방지)
-  const negativeTerms = {
-    '부동산매매업자': ['1세대', '1주택', '비과세'],
-    '신고': ['1세대', '1주택', '비과세'],
-    '사업소득': ['1세대', '1주택', '비과세']
-  };
-  
-  Object.keys(negativeTerms).forEach(negativeTerm => {
-    if (keywords.includes(negativeTerm)) {
-      negativeTerms[negativeTerm].forEach(positiveTerm => {
-        if (normalizedQuery.includes(normalizeText(positiveTerm))) {
-          score -= 5; // 부정 매칭 페널티
-          console.log(`❌ 부정 매칭: ${negativeTerm} vs ${positiveTerm} (점수: -5)`);
-        }
-      });
-    }
-  });
-  
-  console.log(`📊 최종 매칭 점수: ${score} (질문: "${query}" vs 답변ID: ${modelAnswer.id})`);
-  return Math.max(0, score); // 음수 점수 방지
+  console.log(`📊 최종 점수: ${score} (ID: ${modelAnswer.id})`);
+  return score;
 }
 
 // 모범답안 매칭 함수
@@ -237,34 +202,50 @@ exports.handler = async (event) => {
     let decisionMode = 'hybrid';
     let finalAnswer = '';
     
-    // 매칭 점수가 높으면 모범답안 우선 사용
+    // 매칭 점수별 답변 생성 모드 결정
     if (matchScore >= 8) {
+      // 높은 매칭: 모범답안 직접 사용
       console.log(`✅ 모범답안 매칭 성공 (점수: ${matchScore})`);
       decisionMode = 'model_answer';
       finalAnswer = modelAnswer.answer;
-    } else {
-      console.log(`🔍 모범답안 매칭 점수 낮음 (점수: ${matchScore}), Google Search 보완 진행`);
+    } else if (matchScore >= 3) {
+      // 부분 매칭: 모범답안 + Google Search + GPT-4o
+      console.log(`⚖️ 부분 매칭 성공 (점수: ${matchScore}), 모범답안 기반 보완 진행`);
       
       // Phase 2: Google Search 보완
       console.log('🌐 Phase 2: Google Search 보완 중...');
       const searchResults = await performGoogleSearch(query);
       
-      // Phase 3: GPT-4o 정리
-      console.log('🤖 Phase 3: GPT-4o 정리 중...');
+      // Phase 3: GPT-4o 정리 (모범답안 우선 활용)
+      console.log('🤖 Phase 3: GPT-4o 정리 중 (모범답안 기반)...');
       const organizedAnswer = await organizeWithGPT4o(query, modelAnswer, searchResults);
+      
+      if (organizedAnswer) {
+        finalAnswer = organizedAnswer;
+        decisionMode = 'hybrid_partial';
+      } else {
+        // GPT-4o 실패 시 모범답안 사용
+        finalAnswer = modelAnswer.answer;
+        decisionMode = 'model_answer_fallback';
+      }
+    } else {
+      // 매칭 실패: Google Search + GPT-4o만 사용
+      console.log(`❌ 모범답안 매칭 실패 (점수: ${matchScore}), Google Search 전용 진행`);
+      
+      // Phase 2: Google Search 보완
+      console.log('🌐 Phase 2: Google Search 보완 중...');
+      const searchResults = await performGoogleSearch(query);
+      
+      // Phase 3: GPT-4o 정리 (검색결과만)
+      console.log('🤖 Phase 3: GPT-4o 정리 중 (검색결과만)...');
+      const organizedAnswer = await organizeWithGPT4o(query, null, searchResults);
       
       if (organizedAnswer) {
         finalAnswer = organizedAnswer;
         decisionMode = 'hybrid';
       } else {
-        // GPT-4o 실패 시 모범답안 사용
-        if (modelAnswer) {
-          finalAnswer = modelAnswer.answer;
-          decisionMode = 'model_answer_fallback';
-        } else {
-          finalAnswer = '죄송합니다. 현재 질문에 대한 답변을 생성할 수 없습니다.';
-          decisionMode = 'error';
-        }
+        finalAnswer = '죄송합니다. 현재 질문에 대한 답변을 생성할 수 없습니다.';
+        decisionMode = 'error';
       }
     }
 
