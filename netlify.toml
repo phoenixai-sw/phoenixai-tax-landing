@@ -26,6 +26,9 @@
 [functions."answer-assemble"]
   timeout = 120
 
+[functions."tax-advisor"]
+  timeout = 120
+
 [functions."verify-conflict"]
   timeout = 120
 
