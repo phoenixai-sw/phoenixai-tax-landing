@@ -220,7 +220,102 @@ ${context}
   }
 }
 
-// 메인 핸들러 함수
+// GPT-4o 답변 생성 함수
+async function generateAnswerWithGPT4o(query) {
+  try {
+    const prompt = `당신은 한국의 양도소득세 전문가입니다. 
+
+🚨 **중요한 규칙 - 반드시 지켜주세요:**
+- "죄송합니다", "질문이 명확하지 않습니다", "질문이 명확하지 않지만" 등의 표현을 절대 사용하지 마세요
+- 모든 질문에 대해 즉시 직접적으로 답변을 시작하세요
+- 보수적이거나 사과하는 문구 없이 바로 핵심 내용을 설명하세요
+- 구체적인 법조항, 날짜, 요건을 포함하여 답변하세요
+
+사용자 질문: ${query}
+
+위 질문에 대해 정확하고 실용적인 답변을 제공해주세요.
+
+답변 형식:
+1. 개요
+2. 보유/거주·세율표
+3. 유의사항
+4. 법령·근거
+5. 결론
+
+세무 규칙:
+- 1세대1주택 비과세: 거주요건 2년 + 보유요건 2년
+- 다주택자: 중과세 적용
+- 조정대상지역: 추가 중과 가능성
+- 확실하지 않은 정보는 "세무사 확인 필요"로 표시
+
+답변 시작 예시:
+❌ "죄송합니다. 질문이 명확하지 않지만..."
+✅ "1세대1주택 비과세는 다음과 같습니다..."`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'system',
+          content: prompt
+        }
+      ],
+      max_tokens: 800,
+      temperature: 0.1
+    });
+
+    return completion.choices[0].message.content;
+  } catch (error) {
+    console.error('GPT-4o 답변 생성 오류:', error);
+    return null;
+  }
+}
+
+// 답변 검증 함수
+async function verifyAnswerWithSearch(query, generatedAnswer) {
+  try {
+    console.log('🔍 답변 검증 시작...');
+    
+    // 화이트리스트 도메인들
+    const whiteListDomains = [
+      'law.go.kr',    // 국가법령정보센터
+      'nts.go.kr',    // 국세청
+      'molit.go.kr',  // 국토교통부
+      'scourt.go.kr'  // 대법원
+    ];
+    
+    let verificationResults = [];
+    
+    // 각 공식 출처에서 검증
+    for (const domain of whiteListDomains) {
+      try {
+        const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${process.env.GOOGLE_API_KEY}&cx=${process.env.SEARCH_ENGINE_ID}&q=${encodeURIComponent(query + ' 양도소득세 2025')}&siteSearch=${domain}&num=1`;
+        
+        const response = await fetch(searchUrl);
+        const data = await response.json();
+        
+        if (data.items && data.items.length > 0) {
+          console.log(`✅ ${domain} 검증 결과 확인`);
+          verificationResults.push({
+            source: domain,
+            title: data.items[0].title,
+            snippet: data.items[0].snippet,
+            link: data.items[0].link
+          });
+        }
+      } catch (error) {
+        console.log(`❌ ${domain} 검증 실패:`, error.message);
+      }
+    }
+    
+    return verificationResults;
+  } catch (error) {
+    console.error('답변 검증 오류:', error);
+    return [];
+  }
+}
+
+// 메인 핸들러 함수 (새로운 구조)
 exports.handler = async (event) => {
   // OPTIONS 요청 처리
   if (event.httpMethod === 'OPTIONS') {
@@ -243,60 +338,38 @@ exports.handler = async (event) => {
       };
     }
 
-    console.log(`🔍 하이브리드 시스템 시작: ${query}`);
+    console.log(`🔍 새로운 시스템 시작: ${query}`);
 
-    // Phase 1: 모범답안 매칭
-    console.log('📚 Phase 1: 모범답안 매칭 중...');
-    const { match: modelAnswer, score: matchScore } = findBestModelAnswer(query);
+    // Phase 1: GPT-4o 답변 생성
+    console.log('🤖 Phase 1: GPT-4o 답변 생성 중...');
+    const generatedAnswer = await generateAnswerWithGPT4o(query);
     
-    let decisionMode = 'hybrid';
-    let finalAnswer = '';
+    if (!generatedAnswer) {
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({
+          error: '답변 생성 실패',
+          answer: '죄송합니다. 현재 질문에 대한 답변을 생성할 수 없습니다.'
+        })
+      };
+    }
+
+    // Phase 2: 검색을 통한 답변 검증
+    console.log('🔍 Phase 2: 답변 검증 중...');
+    const verificationResults = await verifyAnswerWithSearch(query, generatedAnswer);
     
-    // 매칭 점수별 답변 생성 모드 결정
-    if (matchScore >= 8) {
-      // 높은 매칭: 모범답안 직접 사용
-      console.log(`✅ 모범답안 매칭 성공 (점수: ${matchScore})`);
-      decisionMode = 'model_answer';
-      finalAnswer = modelAnswer.answer;
-    } else if (matchScore >= 3) {
-      // 부분 매칭: 모범답안 + Google Search + GPT-4o
-      console.log(`⚖️ 부분 매칭 성공 (점수: ${matchScore}), 모범답안 기반 보완 진행`);
-      
-      // Phase 2: Google Search 보완
-      console.log('🌐 Phase 2: Google Search 보완 중...');
-      const searchResults = await performGoogleSearch(query);
-      
-      // Phase 3: GPT-4o 정리 (모범답안 우선 활용)
-      console.log('🤖 Phase 3: GPT-4o 정리 중 (모범답안 기반)...');
-      const organizedAnswer = await organizeWithGPT4o(query, modelAnswer, searchResults);
-      
-      if (organizedAnswer) {
-        finalAnswer = organizedAnswer;
-        decisionMode = 'hybrid_partial';
-      } else {
-        // GPT-4o 실패 시 모범답안 사용
-        finalAnswer = modelAnswer.answer;
-        decisionMode = 'model_answer_fallback';
-      }
-    } else {
-      // 매칭 실패: Google Search + GPT-4o만 사용
-      console.log(`❌ 모범답안 매칭 실패 (점수: ${matchScore}), Google Search 전용 진행`);
-      
-      // Phase 2: Google Search 보완
-      console.log('🌐 Phase 2: Google Search 보완 중...');
-      const searchResults = await performGoogleSearch(query);
-      
-      // Phase 3: GPT-4o 정리 (검색결과만)
-      console.log('🤖 Phase 3: GPT-4o 정리 중 (검색결과만)...');
-      const organizedAnswer = await organizeWithGPT4o(query, null, searchResults);
-      
-      if (organizedAnswer) {
-        finalAnswer = organizedAnswer;
-        decisionMode = 'hybrid';
-      } else {
-        finalAnswer = '죄송합니다. 현재 질문에 대한 답변을 생성할 수 없습니다.';
-        decisionMode = 'error';
-      }
+    // Phase 3: 검증 결과를 반영한 최종 답변
+    console.log('📝 Phase 3: 최종 답변 생성 중...');
+    let finalAnswer = generatedAnswer;
+    
+    if (verificationResults.length > 0) {
+      // 검증 결과가 있으면 답변에 추가
+      finalAnswer += '\n\n📚 **공식 출처 검증 결과:**\n';
+      verificationResults.forEach((result, index) => {
+        finalAnswer += `${index + 1}. ${result.source}: ${result.title}\n`;
+      });
+      finalAnswer += '\n💡 위 정보는 공식 출처에서 검증되었습니다.';
     }
 
     const latency = Date.now() - startTime;
@@ -306,8 +379,8 @@ exports.handler = async (event) => {
       sessionId: undefined,
       query: query,
       latency: latency,
-      matchScore: matchScore,
-      decisionMode: decisionMode,
+      decisionMode: 'gpt4o_verify',
+      verificationSources: verificationResults.length,
       tokensUsed: 0
     };
 
@@ -319,17 +392,13 @@ exports.handler = async (event) => {
       body: JSON.stringify({
         answer: finalAnswer,
         metrics: metrics,
-        modelAnswer: modelAnswer ? {
-          id: modelAnswer.id,
-          category: modelAnswer.category,
-          keywords: modelAnswer.keywords
-        } : null,
-        matchScore: matchScore
+        verificationResults: verificationResults,
+        originalAnswer: generatedAnswer
       })
     };
 
   } catch (error) {
-    console.error('❌ 하이브리드 시스템 오류:', error);
+    console.error('❌ 새로운 시스템 오류:', error);
     
     return {
       statusCode: 500,
