@@ -1389,7 +1389,7 @@
                 - 국세청, 국가법령정보센터, 찾기쉬운 생활법령정보, 대법원 종합법률정보, 헌법재판소, 행정안전부, 기획재정부
                 - 민간 사이트는 검색에 활용하되 참고자료에는 표시하지 마세요
 
-                13. 그 다음에 반드시 다음 문구를 포함하세요: "\n\n\n\n\n**Tax Agent 안내 말씀**\n\n'Tax Agent'는 언제나 최상의 답변을 제공하지만, 실제 양도세 업무를 진행하실 때는 전문가에게 문의 하는것도 필요합니다.\n\n🏢 **"국세청 33년 경력"의 믿고 맡길 수 있는 신승세무법인**\n🔗 http://www.sostax.co.kr/"
+                13. 그 다음에 반드시 다음 문구를 포함하세요: "\n\n\n\n\n**Tax Agent 안내 말씀**\n\n'Tax Agent'는 언제나 최상의 답변을 제공하지만, 실제 양도세 업무를 진행하실 때는 전문가에게 문의 하는것도 필요합니다.\n\n🏢 **믿고 맡길 수 있는 피닉스에이아이 AI Agent 세무사**\n🔗 @https://phoenixai-agent.com/ 대표 홈페이지\n🔗 @https://phoenixai-dev.store/   개발안내 홈페이지\n🔗 @https://phoenixai-edu.store/   교육안내 홈페이지"
 
                                   14. 답변 내용에서 웹 검색으로 확인한 정보를 언급할 때는 반드시 참고 번호를 표시하세요:
                    - 첫 번째 참고 사이트: [1]
@@ -2091,8 +2091,10 @@
                 return `<span style="background: #667eea; color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; margin: 0 2px; vertical-align: middle;">${number}</span>`;
             });
             
-            // 인사말 섹션 닫기 태그 추가
-            message = message.replace(/🔗 http:\/\/www\.sostax\.co\.kr\/$/, '🔗 <a href="http://www.sostax.co.kr/" target="_blank" style="color: #667eea; text-decoration: none; font-weight: bold;">http://www.sostax.co.kr/</a></div>');
+            // 인사말 섹션 닫기 태그 추가 - 피닉스에이아이 링크들 처리
+            message = message.replace(/🔗 @(https:\/\/phoenixai-agent\.com\/) 대표 홈페이지/g, '🔗 <a href="$1" target="_blank" style="color: #667eea; text-decoration: none; font-weight: bold;">$1</a> 대표 홈페이지');
+            message = message.replace(/🔗 @(https:\/\/phoenixai-dev\.store\/) 개발안내 홈페이지/g, '🔗 <a href="$1" target="_blank" style="color: #667eea; text-decoration: none; font-weight: bold;">$1</a>   개발안내 홈페이지');
+            message = message.replace(/🔗 @(https:\/\/phoenixai-edu\.store\/) 교육안내 홈페이지$/, '🔗 <a href="$1" target="_blank" style="color: #667eea; text-decoration: none; font-weight: bold;">$1</a>   교육안내 홈페이지</div>');
             
             return message;
         }
